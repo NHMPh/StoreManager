@@ -1,0 +1,58 @@
+@page
+@model WareHouseManager.Pages.Account.LoginModel
+@{
+    ViewData["Title"] = "Login";
+}
+
+<head>
+    <link rel="stylesheet" href="/css/login.css" />
+</head>
+
+<div class="portal-container">
+    <img src="https://cdn-icons-png.flaticon.com/512/88/88329.png" alt="Logo" class="portal-image" />
+    <h1 class="portal-title">Welcome to 404 WMS</h1>
+    <h3>Please choice your role top login</h3>
+    <div class="portal-cards">
+        <div class="portal-card" onclick="showLoginPopup('Admin')">
+            <img src="https://i.pinimg.com/564x/85/45/1d/85451d9fdeabafda8c88b033a04b22a4.jpg" alt="Admin Icon" />
+            <h3>Admin Portal</h3>
+            <p>Manage users, settings, and overall system administration.</p>
+        </div>
+        <div class="portal-card" onclick="showLoginPopup('WarehouseManager')">
+            <img src="https://png.pngtree.com/png-vector/20220730/ourmid/pngtree-business-icon-for-mobile-and-web-apps-business-partnership-relation-vector-png-image_47188796.jpg" alt="Warehouse Manager Icon" />
+            <h3>Warehouse Manager Portal</h3>
+            <p>Oversee inventory, stock levels, and warehouse operations.</p>
+        </div>
+        <div class="portal-card" onclick="showLoginPopup('SalesManager')">
+            <img src="https://static.thenounproject.com/png/3852498-200.png" alt="Sales Manager Icon" />
+            <h3>Sales Manager Portal</h3>
+            <p>Track sales, manage orders, and handle customer relations.</p>
+        </div>
+    </div>
+</div>
+
+<div id="popup-overlay" class="popup-overlay"></div>
+
+<div id="login-popup" class="popup">
+    <button class="close-button" onclick="hideLoginPopup()">&times;</button>
+    <form method="post" asp-antiforgery="true" class="login-form">
+        @Html.AntiForgeryToken()
+        <h2 class="login-title">Login</h2>
+        <div class="form-group">
+            <label for="username" class="form-label">Username</label>
+            <input type="text" id="username" name="Username" required class="form-input" />
+        </div>
+        <div class="form-group">
+            <label for="password" class="form-label">Password</label>
+            <input type="password" id="password" name="Password" required class="form-input" />
+        </div>
+        <input type="hidden" id="role" name="Role" />
+        <button type="submit" class="login-button">Login</button>
+    </form>
+</div>
+
+<footer style="text-align: center; margin-top: 10px; color: #6e6e6e; font-size: 0.9rem;">
+    &copy; 2023 404 WMS. All rights reserved.
+</footer>
+
+<script src="/js/login.js"></script>

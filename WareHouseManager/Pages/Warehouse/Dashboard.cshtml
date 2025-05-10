@@ -1,0 +1,247 @@
+@page
+@{
+    ViewData["Title"] = "Warehouse Manager Dashboard";
+}
+<link rel="stylesheet" href="/css/admin-dashboard.css" />
+<link rel="stylesheet" href="/css/dashboard-popup.css" />
+<div class="sidebar">
+    <h2>Warehouse Manager Panel</h2>
+    <div class="tab" onclick="showTab('product-tab')">Manage Products</div>
+    <div class="tab" onclick="showTab('supplier-tab')">Suppliers</div>
+    <div class="tab" onclick="showTab('transaction-tab')">Transaction In</div>
+    <div class="tab" onclick="showTab('settings-tab')">Settings</div>
+    <div class="tab logout-tab" onclick="window.location.href='/Account/Login'">Logout</div>
+</div>
+
+<div class="content">
+    <div id="product-tab" class="tab-content">
+        <div class="title-bar">
+            <h3>Products</h3>
+            <button class="add-button" onclick="showAddProductPopup()">+ Add Product</button>
+        </div>
+        <div class="search-bar">
+            <input type="text" id="productSearch" placeholder="Search products by name..." onkeyup="searchProducts()" />
+            <button class="filter-button">Filter</button>
+        </div>
+        <div class="flash-card-container" id="productContainer">
+            @* Example of a dynamically populated product card *@
+            <div class="flash-card" data-product-id="product-id">
+                <div class="icon-container">
+                    <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcS3sOu14ghKYw-APsi8LYKBXlbDunx5OPRMug&s" alt="Product Icon" class="icon-image" />
+                </div>
+                <div class="product-details">
+                    <h4>Product Name</h4>
+                    <p>Unit: Box</p>
+                    <p>Cost Per Unit: $10.00</p>
+                    <p>Stock: 100</p>
+                </div>
+                <div class="product-actions">
+                    <button class="edit-button" onclick="editProduct('product-id')">
+                        <i class="fas fa-edit"></i> Edit
+                    </button>
+                    <button class="delete-button" onclick="deleteProduct('product-id')">
+                        <i class="fas fa-trash"></i> Delete
+                    </button>
+                </div>
+            </div>
+            @* Repeat for other products dynamically *@
+        </div>
+    </div>
+
+    <div id="supplier-tab" class="tab-content" style="display: none;">
+        <div class="title-bar">
+            <h3>Suppliers</h3>
+            <button class="add-button" onclick="showAddSupplierPopup()">+ Add Supplier</button>
+        </div>
+        <div class="search-bar">
+            <input type="text" id="supplierSearch" placeholder="Search suppliers by name..." onkeyup="searchSuppliers()" />
+            <button class="filter-button">Filter</button>
+        </div>
+        <div class="flash-card-container" id="supplierContainer">
+            @* Example of a dynamically populated supplier card *@
+            <div class="flash-card">
+                <div class="supplier-details">
+                    <h4>Supplier Name</h4>
+                    <p>Email: supplier@example.com</p>
+                    <p>Mobile: 123-456-7890</p>
+                    <p>Address: 123 Supplier St, City, Country</p>
+                </div>
+                <div class="supplier-actions">
+                    <button class="edit-button" onclick="editSupplier('supplier-id')">
+                        <i class="fas fa-edit"></i> Edit
+                    </button>
+                    <button class="delete-button" onclick="deleteSupplier('supplier-id')">
+                        <i class="fas fa-trash"></i> Delete
+                    </button>
+                </div>
+            </div>
+            @* Repeat for other suppliers dynamically *@
+        </div>
+    </div>
+
+    <div id="transaction-tab" class="tab-content" style="display: none;">
+        <div class="title-bar">
+            <h3>Transaction</h3>
+        </div>
+        <div class="transaction-panel">
+            <div class="form-group">
+                <label for="supplierSelect">Select Supplier</label>
+                <select id="supplierSelect" class="form-control">
+                    <option value="">-- Select Supplier --</option>
+                    <option value="supplier1">Supplier 1</option>
+                    <option value="supplier2">Supplier 2</option>
+                    <!-- Dynamically populate suppliers -->
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="productSelect">Select Product</label>
+                <select id="productSelect" class="form-control" onchange="updateProductInfo()">
+                    <option value="">-- Select Product --</option>
+                    <option value="product1" data-stock="100" data-price="10.00">Product 1</option>
+                    <option value="product2" data-stock="50" data-price="20.00">Product 2</option>
+                    <!-- Dynamically populate products -->
+                </select>
+            </div>
+            <div class="product-info">
+                <p>Stock: <span id="productStock">N/A</span></p>
+                <p>Price per Unit: $<span id="productPrice">N/A</span></p>
+            </div>
+            <div class="form-group">
+                <label for="productQuantity">Quantity</label>
+                <input type="number" id="productQuantity" class="form-control" min="1" onchange="updateTotalAmount()" />
+            </div>
+            <div class="form-group">
+                <label for="totalAmount">Total Amount</label>
+                <input type="text" id="totalAmount" class="form-control" readonly value="0.00" />
+            </div>
+            <button class="add-button" onclick="addPendingOrder()">Add to Pending Orders</button>
+        </div>
+        <div class="pending-orders">
+            <h4>Pending Orders</h4>
+            <table class="styled-table">
+                <thead>
+                    <tr>
+                        <th>Supplier</th>
+                        <th>Product</th>
+                        <th>Quantity</th>
+                        <th>Total</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="pendingOrdersTable">
+                    <!-- Dynamically populated rows -->
+                </tbody>
+            </table>
+        </div>
+        <div class="payment-panel">
+            <h4>Payment</h4>
+            <div class="form-group">
+                <label for="totalPayable">Total Payable</label>
+                <input type="text" id="totalPayable" class="form-control" readonly />
+            </div>
+            <div class="form-group">
+                <label for="amountPaid">Amount Paid</label>
+                <input type="number" id="amountPaid" class="form-control" min="0" onchange="updateRemainingBalance()" />
+            </div>
+            <div class="form-group">
+                <p>Remaining Balance: $<span id="remainingBalance">0.00</span></p>
+            </div>
+            <button class="submit-button" onclick="processPayment()">Pay</button>
+        </div>
+    </div>
+
+    <div id="settings-tab" class="tab-content" style="display: none;">
+        <div class="title-bar">
+            <h3>Settings</h3>
+        </div>
+        <div class="settings-section">
+            <h4>Change Password</h4>
+            <form method="post" action="/WarehouseManager/ChangePassword">
+                <div class="form-group">
+                    <label for="currentPassword">Current Password</label>
+                    <input type="password" id="currentPassword" name="CurrentPassword" class="form-control" required />
+                </div>
+                <div class="form-group">
+                    <label for="newPassword">New Password</label>
+                    <input type="password" id="newPassword" name="NewPassword" class="form-control" required />
+                </div>
+                <div class="form-group">
+                    <label for="confirmPassword">Confirm New Password</label>
+                    <input type="password" id="confirmPassword" name="ConfirmPassword" class="form-control" required />
+                </div>
+                <button type="submit" class="submit-button">Change Password</button>
+            </form>
+        </div>
+    </div>
+</div>
+
+<div id="add-product-popup" class="popup" style="display: none;">
+    <div class="popup-content">
+        <h3>Add Product</h3>
+        <form method="post" enctype="multipart/form-data">
+            <div class="form-group">
+                <label for="productId">Product ID</label>
+                <input type="text" id="productId" name="ProductId" required />
+            </div>
+            <div class="form-group">
+                <label for="productName">Product Name</label>
+                <input type="text" id="productName" name="ProductName" required />
+            </div>
+            <div class="form-group">
+                <label for="productImage">Product Image</label>
+                <input type="file" id="productImage" name="ProductImage" accept="image/*" required />
+            </div>
+            <div class="form-group">
+                <label for="productIcon">Icon Image</label>
+                <input type="file" id="productIcon" name="ProductIcon" accept="image/*" required />
+            </div>
+            <div class="form-group">
+                <label for="unit">Unit</label>
+                <input type="text" id="unit" name="Unit" required />
+            </div>
+            <div class="form-group">
+                <label for="costPerUnit">Cost Per Unit</label>
+                <input type="number" id="costPerUnit" name="CostPerUnit" step="0.01" required />
+            </div>
+            <div class="form-group">
+                <label for="stock">Stock</label>
+                <input type="number" id="stock" name="Stock" required />
+            </div>
+            <button type="submit" class="submit-button">Submit</button>
+            <button type="button" class="cancel-button" onclick="hideAddProductPopup()">Cancel</button>
+        </form>
+    </div>
+</div>
+
+<div id="add-supplier-popup" class="popup" style="display: none;">
+    <div class="popup-content">
+        <h3>Add Supplier</h3>
+        <form method="post">
+            <div class="form-group">
+                <label for="supplierId">Supplier ID</label>
+                <input type="text" id="supplierId" name="SupplierId" required />
+            </div>
+            <div class="form-group">
+                <label for="supplierName">Supplier Name</label>
+                <input type="text" id="supplierName" name="SupplierName" required />
+            </div>
+            <div class="form-group">
+                <label for="supplierEmail">Email</label>
+                <input type="email" id="supplierEmail" name="SupplierEmail" required />
+            </div>
+            <div class="form-group">
+                <label for="supplierMobile">Mobile</label>
+                <input type="tel" id="supplierMobile" name="SupplierMobile" required />
+            </div>
+            <div class="form-group">
+                <label for="supplierAddress">Address</label>
+                <textarea id="supplierAddress" name="SupplierAddress" required></textarea>
+            </div>
+            <button type="submit" class="submit-button">Submit</button>
+            <button type="button" class="cancel-button" onclick="hideAddSupplierPopup()">Cancel</button>
+        </form>
+    </div>
+</div>
+
+<script src="/js/dashboard.js"></script>
+

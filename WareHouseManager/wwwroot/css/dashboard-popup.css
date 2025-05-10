@@ -1,0 +1,363 @@
+.popup-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.3); /* Semi-transparent background */
+    backdrop-filter: blur(5px); /* Apply blur effect */
+    z-index: 999; /* Ensure it is behind the popup but above other content */
+    display: block; /* Initially hidden */
+}
+
+.popup {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 1000; /* Ensure it is above the overlay */
+    background: #ffffff;
+    padding: 20px; /* Original padding */
+    border-radius: 8px; /* Original rounded corners */
+    border: 1px solid #ccc; /* Original light gray border */
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); /* Original subtle shadow */
+    width: 350px; /* Original fixed width */
+    max-width: 90%; /* Ensure responsiveness */
+}
+
+.popup-content h3 {
+    margin-bottom: 15px; /* Original spacing below the title */
+    font-size: 1.2rem; /* Original font size */
+    color: #333; /* Original dark gray for the title */
+    text-align: center;
+}
+
+.form-group {
+    margin-bottom: 10px; /* Original spacing between form fields */
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: bold;
+    color: #333; /* Original dark gray for labels */
+}
+
+.form-group input,
+.form-group textarea {
+    width: 100%;
+    padding: 8px; /* Original padding */
+    border: 1px solid #ccc; /* Original light gray border */
+    border-radius: 4px; /* Original rounded corners */
+    font-size: 0.9rem; /* Original font size */
+    color: #333; /* Original dark gray text */
+    background-color: #fff; /* Original white background for inputs */
+    box-sizing: border-box;
+}
+
+textarea {
+    resize: vertical; /* Original resizing behavior */
+    height: 70px; /* Original fixed height */
+}
+
+.submit-button {
+    background-color: #007bff; /* Original blue button */
+    color: white;
+    padding: 8px 12px; /* Original padding */
+    border: none;
+    border-radius: 4px; /* Original rounded corners */
+    cursor: pointer;
+    font-weight: bold;
+    transition: background-color 0.3s ease;
+    width: auto; /* Original width */
+    margin-bottom: 10px;
+}
+
+.submit-button:hover {
+    background-color: #0056b3; /* Original darker blue on hover */
+}
+
+.cancel-button {
+    background-color: #dc3545; /* Original red button */
+    color: white;
+    padding: 8px 12px; /* Original padding */
+    border: none;
+    border-radius: 4px; /* Original rounded corners */
+    cursor: pointer;
+    font-weight: bold;
+    transition: background-color 0.3s ease;
+    width: auto; /* Original width */
+}
+
+.cancel-button:hover {
+    background-color: #c82333; /* Original darker red on hover */
+}
+
+.styled-table {
+    width: 100%;
+    border-collapse: collapse; /* Remove gaps between table cells */
+    margin-top: 15px;
+    font-size: 1rem;
+    text-align: left;
+    background-color: #ffffff; /* White background for the table */
+    border: 1px solid #dee2e6; /* Light gray border around the table */
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); /* Subtle shadow for depth */
+    border-radius: 5px; /* Rounded corners */
+    overflow: hidden; /* Ensure rounded corners apply to the table */
+}
+
+.styled-table th, .styled-table td {
+    padding: 12px 15px; /* Add padding for better spacing */
+    border-bottom: 1px solid #dee2e6; /* Light gray border between rows */
+}
+
+.styled-table th {
+    background-color: #f8f9fa; /* Light gray background for headers */
+    color: #495057; /* Dark gray text for headers */
+    font-weight: bold;
+    text-align: center; /* Center-align header text */
+    font-size: 1.1rem; /* Slightly larger font size for headers */
+}
+
+.styled-table tbody tr:nth-child(even) {
+    background-color: #f8f9fa; /* Light gray for even rows */
+}
+
+.styled-table tbody tr:hover {
+    background-color: #e9ecef; /* Slightly darker gray on hover */
+}
+
+.styled-table td {
+    color: #495057; /* Dark gray text for table cells */
+    text-align: center; /* Center-align cell text */
+    font-size: 1rem; /* Standard font size for table cells */
+}
+
+.styled-table .delete-button {
+    background-color: #f44336; /* Red button for delete */
+    color: white;
+    padding: 5px 10px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    transition: background-color 0.3s ease;
+}
+
+.styled-table .delete-button:hover {
+    background-color: #d32f2f; /* Darker red on hover */
+}
+
+.form-control {
+    width: 100%; /* Ensure full width */
+    padding: 12px; /* Increased padding for better spacing */
+    font-size: 1rem; /* Larger font size for better readability */
+    border: 1px solid #ced4da; /* Light gray border */
+    border-radius: 5px; /* Rounded corners */
+    background-color: #ffffff; /* White background */
+    color: #495057; /* Dark gray text */
+    box-sizing: border-box; /* Ensure padding doesn't affect width */
+    margin-bottom: 15px; /* Space below the combobox */
+}
+
+.form-control:focus {
+    border-color: #007bff; /* Blue border on focus */
+    outline: none; /* Remove default outline */
+    box-shadow: 0 0 5px rgba(0, 123, 255, 0.5); /* Subtle blue glow */
+}
+
+.transaction-section {
+    margin-top: 20px; /* Space between sections */
+}
+
+.transaction-section h4 {
+    margin-bottom: 10px; /* Space below the section title */
+    font-size: 1.2rem; /* Slightly larger font size */
+    color: #495057; /* Dark gray text */
+    font-weight: bold;
+}
+
+.manager-details {
+    margin-bottom: 10px; /* Space below details */
+    font-size: 0.9rem; /* Adjusted font size for details */
+    color: #333; /* Dark gray text */
+}
+
+.manager-actions {
+    display: flex;
+    gap: 10px; /* Space between action buttons */
+}
+
+.manager-actions .edit-button, .manager-actions .delete-button {
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 1.2rem;
+    color: #007bff; /* Blue icons */
+    transition: color 0.3s ease;
+}
+
+.manager-actions .edit-button:hover {
+    color: #0056b3; /* Darker blue on hover */
+}
+
+.manager-actions .delete-button:hover {
+    color: #dc3545; /* Red on hover */
+}
+
+.sales-manager-details {
+    margin-bottom: 10px; /* Space below details */
+    font-size: 0.9rem; /* Adjusted font size for details */
+    color: #333; /* Dark gray text */
+}
+
+.sales-manager-actions {
+    display: flex;
+    gap: 10px; /* Space between action buttons */
+}
+
+.sales-manager-actions .edit-button, .sales-manager-actions .delete-button {
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 1.2rem;
+    color: #007bff; /* Blue icons */
+    transition: color 0.3s ease;
+}
+
+.sales-manager-actions .edit-button:hover {
+    color: #0056b3; /* Darker blue on hover */
+}
+
+.sales-manager-actions .delete-button:hover {
+    color: #dc3545; /* Red on hover */
+}
+
+.flash-card {
+    position: relative; /* Enable positioning for the icon */
+    background-color: #ffffff; /* White background for cards */
+    border: 1px solid #e0e0e0; /* Light gray border */
+    border-radius: 12px; /* Softer rounded corners */
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); /* Subtle shadow for depth */
+    padding: 20px; /* Increased padding for better spacing */
+    margin-bottom: 20px; /* Space between cards */
+    width: calc(25% - 20px); /* Responsive width for grid layout */
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    text-align: left;
+    transition: transform 0.2s ease, box-shadow 0.2s ease; /* Add hover effect */
+}
+
+.flash-card:hover {
+    transform: translateY(-5px); /* Slight lift effect on hover */
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15); /* Enhanced shadow on hover */
+}
+
+.flash-card .icon-container {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    width: 40px;
+    height: 40px;
+}
+
+.flash-card .icon-image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover; /* Ensure the icon fits nicely */
+    border-radius: 50%; /* Make the icon circular */
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); /* Subtle shadow for the icon */
+}
+
+.flash-card .details {
+    margin-bottom: 15px; /* Space below details */
+    font-size: 1rem; /* Adjusted font size for details */
+    color: #333; /* Dark gray text */
+    line-height: 1.5; /* Improved readability */
+}
+
+.flash-card .details h4 {
+    font-size: 1.2rem; /* Larger font size for titles */
+    font-weight: bold;
+    color: #007bff; /* Blue for titles */
+    margin-bottom: 10px; /* Space below the title */
+}
+
+.flash-card .actions {
+    display: flex;
+    justify-content: flex-end; /* Align buttons to the right */
+    gap: 15px; /* Space between action buttons */
+    width: 100%; /* Ensure buttons span the card width */
+}
+
+.flash-card .edit-button, .flash-card .delete-button {
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 1rem; /* Adjusted font size for labels */
+    color: #007bff; /* Blue icons and text */
+    transition: color 0.3s ease, transform 0.2s ease; /* Add hover effect */
+    display: inline-flex; /* Align icon and label horizontally */
+    align-items: center; /* Center-align icon and label */
+    gap: 5px; /* Space between icon and label */
+}
+
+.flash-card .edit-button:hover {
+    color: #0056b3; /* Darker blue on hover */
+    transform: scale(1.1); /* Slight zoom effect on hover */
+}
+
+.flash-card .delete-button:hover {
+    color: #dc3545; /* Red on hover */
+    transform: scale(1.1); /* Slight zoom effect on hover */
+}
+
+.settings-section {
+    margin-top: 20px; /* Space between sections */
+    padding: 20px; /* Add padding for better spacing */
+    background-color: #f8f9fa; /* Light gray background */
+    border: 1px solid #dee2e6; /* Light gray border */
+    border-radius: 8px; /* Rounded corners */
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); /* Subtle shadow for depth */
+}
+
+.settings-section h4 {
+    margin-bottom: 15px; /* Space below the section title */
+    font-size: 1.2rem; /* Slightly larger font size */
+    color: #495057; /* Dark gray text */
+    font-weight: bold;
+}
+
+.settings-section .form-group {
+    margin-bottom: 15px; /* Space between form fields */
+}
+
+.settings-section .form-group label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: bold;
+    color: #333; /* Dark gray for labels */
+}
+
+.settings-section .form-group input {
+    width: 100%;
+    padding: 10px; /* Adjusted padding for better spacing */
+    border: 1px solid #ccc; /* Light gray border */
+    border-radius: 4px; /* Rounded corners */
+    font-size: 1rem; /* Standard font size */
+    color: #333; /* Dark gray text */
+    background-color: #fff; /* White background */
+    box-sizing: border-box;
+}
+
+.settings-section .submit-button {
+    background-color: #007bff; /* Blue button */
+    color: white;
+    padding: 10px 15px; /* Adjusted padding for better button size */
+    border: none;
+    border-radius: 4px; /* Rounded corners */
+    cursor: pointer;
+    font-weight: bold;
+    transition: background-color 0.3s ease;
+}
