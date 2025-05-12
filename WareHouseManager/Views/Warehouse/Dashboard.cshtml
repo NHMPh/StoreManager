@@ -1,0 +1,28 @@
+@{
+    ViewData["Title"] = "Warehouse Manager Dashboard";
+}
+<link rel="stylesheet" href="/css/admin-dashboard.css" />
+<link rel="stylesheet" href="/css/dashboard-popup.css" />
+<div class="sidebar">
+    <h2>Warehouse Manager Panel</h2>
+    <div class="tab" onclick="showTab('product-tab')">Manage Products</div>
+    <div class="tab" onclick="showTab('supplier-tab')">Suppliers</div>
+    <div class="tab" onclick="showTab('transaction-tab')">Transaction In</div>
+    <div class="tab" onclick="showTab('settings-tab')">Settings</div>
+    <div class="tab logout-tab" onclick="window.location.href='/Account/Login'">Logout</div>
+</div>
+<div class="content">
+    <div id="product-tab" class="tab-content">
+        <!-- ...existing code for product management... -->
+    </div>
+    <div id="supplier-tab" class="tab-content" style="display: none;">
+        <!-- ...existing code for supplier management... -->
+    </div>
+    <div id="transaction-tab" class="tab-content" style="display: none;">
+        <!-- ...existing code for transaction in... -->
+    </div>
+    <div id="settings-tab" class="tab-content" style="display: none;">
+        <!-- ...existing code for settings... -->
+    </div>
+</div>
+<script src="/js/dashboard.js"></script>

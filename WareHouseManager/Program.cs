@@ -1,7 +1,9 @@
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-
+using Microsoft.Extensions.Configuration;
+using MySql.Data.MySqlClient;
+using WareHouseManager.Repositories;
 namespace WareHouseManager
 {
     public class Program
@@ -11,14 +13,20 @@ namespace WareHouseManager
             var builder = WebApplication.CreateBuilder(args);
 
             // Add services to the container.
-            builder.Services.AddRazorPages();
+            builder.Services.AddControllersWithViews();
+            builder.Services.AddSingleton<UserRepository>(sp =>
+            {
+                var configuration = sp.GetRequiredService<IConfiguration>();
+                var connectionString = configuration.GetConnectionString("DefaultConnection");
+                return new UserRepository(connectionString);
+            });
 
             var app = builder.Build();
 
             // Configure the HTTP request pipeline.
             if (!app.Environment.IsDevelopment())
             {
-                app.UseExceptionHandler("/Error");
+                app.UseExceptionHandler("/Home/Error");
                 app.UseHsts();
             }
 
@@ -29,7 +37,9 @@ namespace WareHouseManager
 
             app.UseAuthorization();
 
-            app.MapRazorPages(); // Ensure this line exists to map Razor Pages.
+            app.MapControllerRoute(
+                name: "default",
+                pattern: "{controller=Account}/{action=Login}/{id?}");
 
             app.Run();
         }

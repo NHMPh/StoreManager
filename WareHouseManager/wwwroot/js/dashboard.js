@@ -9,6 +9,13 @@ function showTab(tabId) {
 function showAddProductPopup() {
     document.getElementById('add-product-popup').style.display = 'block';
 
+    // Reset form fields
+    document.getElementById('productId').value = '';
+    document.getElementById('productName').value = '';
+    document.getElementById('unit').value = '';
+    document.getElementById('costPerUnit').value = '';
+    document.getElementById('stock').value = '';
+
     let overlay = document.getElementById('popup-overlay');
     if (!overlay) {
         overlay = document.createElement('div');
