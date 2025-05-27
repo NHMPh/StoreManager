@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Customer Management</title>
+  <style>
+    table, th, td { border: 1px solid black; border-collapse: collapse; padding: 8px; }
+    table { width: 100%; margin-bottom: 20px; }
+    input, button { margin: 5px; }
+  </style>
+</head>
+<body>
+
+  <h2>Customer List</h2>
+  <table id="customerTable">
+    <thead>
+      <tr>
+        <th>ID</th><th>Name</th><th>Email</th><th>Phone</th><th>Actions</th>
+      </tr>
+    </thead>
+    <tbody></tbody>
+  </table>
+
+  <h3>Add / Edit Customer</h3>
+  <input type="hidden" id="customerId">
+  <input type="text" id="fullName" placeholder="Full Name">
+  <input type="email" id="email" placeholder="Email">
+  <input type="text" id="phone" placeholder="Phone">
+  <input type="text" id="address" placeholder="Address">
+  <br>
+  <button onclick="saveCustomer()">Save</button>
+  <button onclick="clearForm()">Clear</button>
+
+  <h3>Customer Orders</h3>
+  <div id="orderDetails"></div>
+
+  <script>
+    const API_BASE = 'https://localhost:44397/api';
+    const CUSTOMER_API = `${API_BASE}/Customer`;
+    const LOGIN_API = `${API_BASE}/Auth/login`;
+    let token = '';
+
+    // Auto login on load
+    window.onload = async function () {
+      await login();
+      await fetchCustomers();
+    };
+
+    async function login() {
+      const res = await fetch(LOGIN_API, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username: 'Admin', password: '123456' })
+      });
+
+      if (!res.ok) {
+        alert("Login failed!");
+        return;
+      }
+
+      const data = await res.json();
+      console.log(data);
+      token = data.token;
+    }
+
+    async function fetchWithAuth(url, method = 'GET', body = null) {
+      const options = {
+        method,
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
+      };
+      if (body) options.body = JSON.stringify(body);
+
+      const res = await fetch(url, options);
+      if (!res.ok) throw new Error(await res.text());
+      return await res.json();
+    }
+
+    async function fetchCustomers() {
+      const data = await fetchWithAuth(CUSTOMER_API);
+      const tbody = document.querySelector("#customerTable tbody");
+      tbody.innerHTML = "";
+      data.forEach(c => {
+        tbody.innerHTML += `
+          <tr>
+            <td>${c.id}</td>
+            <td>${c.fullName}</td>
+            <td>${c.email}</td>
+            <td>${c.phone}</td>
+            <td>
+              <button onclick="editCustomer(${c.id})">Edit</button>
+              <button onclick="deleteCustomer(${c.id})">Delete</button>
+              <button onclick="viewDetails(${c.id})">Details</button>
+            </td>
+          </tr>
+        `;
+      });
+    }
+
+    async function saveCustomer() {
+      const id = document.getElementById("customerId").value;
+      const customer = {
+        id: parseInt(id || 0),
+        fullName: document.getElementById("fullName").value,
+        email: document.getElementById("email").value,
+        phone: document.getElementById("phone").value,
+        address: document.getElementById("address").value
+      };
+
+      const method = id ? 'PUT' : 'POST';
+      const url = id ? `${CUSTOMER_API}/${id}` : CUSTOMER_API;
+
+      await fetchWithAuth(url, method, customer);
+      clearForm();
+      fetchCustomers();
+    }
+
+    async function editCustomer(id) {
+      const data = await fetchWithAuth(`${CUSTOMER_API}/${id}`);
+      document.getElementById("customerId").value = data.id;
+      document.getElementById("fullName").value = data.fullName;
+      document.getElementById("email").value = data.email;
+      document.getElementById("phone").value = data.phone;
+      document.getElementById("address").value = data.address;
+      document.getElementById("orderDetails").innerHTML = "";
+    }
+
+    async function deleteCustomer(id) {
+      if (!confirm("Are you sure to delete this customer?")) return;
+      await fetchWithAuth(`${CUSTOMER_API}/${id}`, 'DELETE');
+      fetchCustomers();
+    }
+
+    async function viewDetails(id) {
+      const data = await fetchWithAuth(`${CUSTOMER_API}/${id}`);
+      let html = `<h4>Orders for ${data.fullName}</h4>`;
+      if (!data.orders.length) {
+        html += "<i>No orders found</i>";
+      } else {
+        data.orders.forEach(order => {
+          html += `<b>Order Date:</b> ${new Date(order.orderDate).toLocaleDateString()}<br><ul>`;
+          order.products.forEach(p => {
+            html += `<li>${p.productName} - Quantity: ${p.quantity}, Unit Price: ${p.unitPrice}</li>`;
+          });
+          html += "</ul><hr>";
+        });
+      }
+      document.getElementById("orderDetails").innerHTML = html;
+    }
+
+    function clearForm() {
+      document.getElementById("customerId").value = "";
+      document.getElementById("fullName").value = "";
+      document.getElementById("email").value = "";
+      document.getElementById("phone").value = "";
+      document.getElementById("address").value = "";
+      document.getElementById("orderDetails").innerHTML = "";
+    }
+  </script>
+
+</body>
+</html>

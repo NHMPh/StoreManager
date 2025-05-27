@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+    <meta charset="UTF-8" />
+    <title>Quản lý nhà cung cấp</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            max-width: 800px;
+            margin: auto;
+        }
+
+        h2 {
+            color: #333;
+            margin-bottom: 20px;
+        }
+
+        input {
+            display: block;
+            margin-bottom: 10px;
+            padding: 8px;
+            width: 100%;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+        }
+
+        button {
+            background-color: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 18px;
+            border-radius: 6px;
+            cursor: pointer;
+            margin-right: 10px;
+        }
+
+        button:hover {
+            background-color: #0056b3;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 30px;
+        }
+
+        th, td {
+            border: 1px solid #ccc;
+            padding: 10px;
+        }
+
+        .message {
+            margin-top: 15px;
+        }
+
+        .action-buttons button {
+            background-color: #28a745;
+        }
+
+        .action-buttons .delete {
+            background-color: #dc3545;
+        }
+    </style>
+</head>
+
+<body>
+
+    <h2>➕ Thêm / Cập nhật nhà cung cấp</h2>
+
+    <input type="hidden" id="supplierId" />
+    <input type="text" id="name" placeholder="Tên nhà cung cấp" />
+    <input type="email" id="email" placeholder="Email" />
+    <input type="text" id="mobile" placeholder="Số điện thoại" />
+    <input type="text" id="address" placeholder="Địa chỉ" />
+
+    <button id="submitBtn">Lưu</button>
+
+    <div class="message" id="message"></div>
+
+    <h2>📋 Danh sách nhà cung cấp</h2>
+    <table id="supplierTable">
+        <thead>
+            <tr>
+                <th>Tên</th>
+                <th>Email</th>
+                <th>Điện thoại</th>
+                <th>Địa chỉ</th>
+                <th>Hành động</th>
+            </tr>
+        </thead>
+        <tbody>
+        </tbody>
+    </table>
+
+    <script>
+        const API_BASE = "https://localhost:44397/api";
+        let token = "your_jwt_token_here"; // Thay thế token hợp lệ
+
+        const loadSuppliers = async () => {
+            const tbody = document.querySelector("#supplierTable tbody");
+            tbody.innerHTML = "";
+
+            try {
+                const res = await fetch(`${API_BASE}/Suppliers`, {
+                    headers: token ? { "Authorization": `Bearer ${token}` } : {}
+                });
+                const suppliers = await res.json();
+
+                suppliers.forEach(supplier => {
+                    const row = document.createElement("tr");
+
+                    row.innerHTML = `
+                        <td>${supplier.name}</td>
+                        <td>${supplier.email}</td>
+                        <td>${supplier.mobile}</td>
+                        <td>${supplier.address}</td>
+                        <td class="action-buttons">
+                            <button onclick="editSupplier(${supplier.id}, '${supplier.name}', '${supplier.email}', '${supplier.mobile}', '${supplier.address}')">Sửa</button>
+                            <button class="delete" onclick="deleteSupplier(${supplier.id})">Xóa</button>
+                        </td>
+                    `;
+
+                    tbody.appendChild(row);
+                });
+            } catch (err) {
+                console.error("Lỗi khi tải danh sách:", err);
+            }
+        };
+
+        const showMessage = (text, color) => {
+            const messageEl = document.getElementById("message");
+            messageEl.textContent = text;
+            messageEl.style.color = color;
+        };
+
+        document.getElementById("submitBtn").addEventListener("click", async () => {
+            const id = document.getElementById("supplierId").value;
+            const name = document.getElementById("name").value.trim();
+            const email = document.getElementById("email").value.trim();
+            const mobile = document.getElementById("mobile").value.trim();
+            const address = document.getElementById("address").value.trim();
+
+            if (!name) {
+                showMessage("Vui lòng nhập tên nhà cung cấp.", "red");
+                return;
+            }
+
+            const supplier = { name, email, mobile, address };
+
+            const method = id ? "PUT" : "POST";
+            const url = id ? `${API_BASE}/Suppliers/${id}` : `${API_BASE}/Suppliers`;
+
+            try {
+                const res = await fetch(url, {
+                    method,
+                    headers: {
+                        "Content-Type": "application/json",
+                        ...(token && { "Authorization": `Bearer ${token}` }),
+                    },
+                    body: JSON.stringify(supplier)
+                });
+
+                if (!res.ok) {
+                    const err = await res.text();
+                    throw new Error(err);
+                }
+
+                showMessage(id ? "✅ Cập nhật thành công!" : "✅ Thêm thành công!", "green");
+
+                document.getElementById("supplierId").value = "";
+                document.getElementById("name").value = "";
+                document.getElementById("email").value = "";
+                document.getElementById("mobile").value = "";
+                document.getElementById("address").value = "";
+
+                loadSuppliers();
+            } catch (err) {
+                showMessage(`❌ ${err.message}`, "red");
+            }
+        });
+
+        const editSupplier = (id, name, email, mobile, address) => {
+            document.getElementById("supplierId").value = id;
+            document.getElementById("name").value = name;
+            document.getElementById("email").value = email;
+            document.getElementById("mobile").value = mobile;
+            document.getElementById("address").value = address;
+            showMessage("✏️ Đang chỉnh sửa nhà cung cấp...", "orange");
+        };
+
+        const deleteSupplier = async (id) => {
+            if (!confirm("Bạn có chắc chắn muốn xóa nhà cung cấp này?")) return;
+
+            try {
+                const res = await fetch(`${API_BASE}/Suppliers/${id}`, {
+                    method: "DELETE",
+                    headers: token ? { "Authorization": `Bearer ${token}` } : {}
+                });
+
+                if (!res.ok) {
+                    throw new Error("Không thể xóa nhà cung cấp.");
+                }
+
+                showMessage("🗑️ Đã xóa thành công!", "green");
+                loadSuppliers();
+            } catch (err) {
+                showMessage(`❌ ${err.message}`, "red");
+            }
+        };
+
+        window.onload = loadSuppliers;
+    </script>
+
+</body>
+
+</html>

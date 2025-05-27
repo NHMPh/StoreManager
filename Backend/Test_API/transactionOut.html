@@ -1,0 +1,199 @@
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Xuất hàng cho Khách hàng</title>
+    <style>
+        input,
+        select,
+        button {
+            margin: 5px;
+        }
+
+        table,
+        th,
+        td {
+            border: 1px solid black;
+            border-collapse: collapse;
+            padding: 5px;
+        }
+    </style>
+</head>
+
+<body>
+    <h2>Xuất hàng cho khách hàng</h2>
+
+    <button onclick="login()">\u0110ăng nhập (admin)</button><br>
+
+    <select id="customerSelect">
+        <option value="">-- Chọn khách hàng --</option>
+    </select><br>
+
+    <label>Chọn sản phẩm để xuất:</label>
+    <select id="productSelect" onchange="onProductSelected()">
+        <option value="">-- Chọn sản phẩm --</option>
+    </select><br>
+
+    <div id="productForm" style="display: none;">
+        <label>Thông tin xuất hàng:</label><br>
+        <input type="number" id="quantity" placeholder="Số lượng">
+        <input type="number" id="unitPrice" placeholder="Giá xuất">
+        <button onclick="addProduct()">Thêm sản phẩm</button>
+    </div>
+
+    <h3>Danh sách sản phẩm sẽ xuất</h3>
+    <table>
+        <thead>
+            <tr>
+                <th>Tên</th>
+                <th>Số lượng</th>
+                <th>Giá</th>
+                <th>Xoá</th>
+            </tr>
+        </thead>
+        <tbody id="productList"></tbody>
+    </table>
+
+    <button onclick="submitTransaction()">Gửi phiếu xuất hàng</button>
+
+    <h3>Danh sách đơn hàng đã xuất</h3>
+    <div id="transactionList"></div>
+
+    <script>
+        const API_BASE = "https://localhost:44397/api";
+        let token = "";
+        let productDetails = [];
+        let allProducts = [];
+
+        async function login() {
+            const res = await fetch(`${API_BASE}/Auth/login`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ username: "admin", password: "123456" })
+            });
+            const data = await res.json();
+            token = data.token;
+            alert("\u0110ăng nhập thành công!");
+            await fetchCustomers();
+            await fetchAllProducts();
+            await fetchAllTransactions();
+        }
+
+        async function fetchCustomers() {
+            const res = await fetch(`${API_BASE}/Customer`, {
+                headers: { "Authorization": `Bearer ${token}` }
+            });
+            const customers = await res.json();
+            const select = document.getElementById("customerSelect");
+            select.innerHTML = '<option value="">-- Chọn khách hàng --</option>';
+            customers.forEach(c => {
+                const option = document.createElement("option");
+                option.value = c.id;
+                option.textContent = `${c.fullName} (#${c.id})`;
+                select.appendChild(option);
+            });
+        }
+
+        async function fetchAllProducts() {
+            const res = await fetch(`${API_BASE}/Product`, {
+                headers: { "Authorization": `Bearer ${token}` }
+            });
+            allProducts = await res.json();
+            const select = document.getElementById("productSelect");
+            select.innerHTML = '<option value="">-- Chọn sản phẩm --</option>';
+            allProducts.forEach(p => {
+                const option = document.createElement("option");
+                option.value = p.id;
+                option.textContent = `${p.productName} (#${p.id})`;
+                select.appendChild(option);
+            });
+        }
+
+        function onProductSelected() {
+            document.getElementById("productForm").style.display = document.getElementById("productSelect").value ? "block" : "none";
+        }
+
+        function addProduct() {
+            const productId = parseInt(document.getElementById("productSelect").value);
+            const quantity = parseInt(document.getElementById("quantity").value);
+            const unitPrice = parseFloat(document.getElementById("unitPrice").value);
+
+            if (!productId || !quantity || !unitPrice) return alert("Nhập đủ thông tin");
+
+            const product = allProducts.find(p => p.id === productId);
+            if (!product) return alert("Sản phẩm không hợp lệ");
+
+            productDetails.push({ productId, quantity, unitPrice, name: product.productName });
+            renderProductList();
+            document.getElementById("productForm").style.display = "none";
+            document.getElementById("productSelect").value = "";
+            document.getElementById("quantity").value = "";
+            document.getElementById("unitPrice").value = "";
+        }
+
+        function renderProductList() {
+            const tbody = document.getElementById("productList");
+            tbody.innerHTML = "";
+            productDetails.forEach((p, i) => {
+                tbody.innerHTML += `<tr><td>${p.name}</td><td>${p.quantity}</td><td>${p.unitPrice}</td><td><button onclick="removeProduct(${i})">Xoá</button></td></tr>`;
+            });
+        }
+
+        function removeProduct(i) {
+            productDetails.splice(i, 1);
+            renderProductList();
+        }
+
+        async function submitTransaction() {
+            const customerId = parseInt(document.getElementById("customerSelect").value);
+            if (!customerId || productDetails.length === 0) return alert("Chọn khách hàng và sản phẩm");
+
+            const body = {
+                customerId,
+                transactionDate: new Date().toISOString(),
+                details: productDetails.map(p => ({ productId: p.productId, quantity: p.quantity, unitPrice: p.unitPrice }))
+            };
+
+            const res = await fetch(`${API_BASE}/TransactionOut`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json", "Authorization": `Bearer ${token}` },
+                body: JSON.stringify(body)
+            });
+
+            if (res.ok) {
+                alert("Xuất hàng thành công");
+                productDetails = [];
+                renderProductList();
+                await fetchAllTransactions();
+            } else {
+                alert("Lỗi: " + await res.text());
+            }
+        }
+
+        async function fetchAllTransactions() {
+            const res = await fetch(`${API_BASE}/TransactionOut`, {
+                headers: { "Authorization": `Bearer ${token}` }
+            });
+
+            const transactions = await res.json();
+            const div = document.getElementById("transactionList");
+            div.innerHTML = "";
+
+            transactions.forEach(tr => {
+                div.innerHTML += `
+            <div style="margin-bottom: 10px; padding: 5px; border: 1px solid #ccc;">
+                <strong>Khách hàng:</strong> ${tr.customerName || "Không rõ"}<br>
+                <strong>Ngày:</strong> ${new Date(tr.transactionDate).toLocaleString()}<br>
+                <strong>Chi tiết:</strong>
+                <ul>
+                    ${tr.details.map(d => `<li>${d.productName} - SL: ${d.quantity} - Giá: ${d.unitPrice}</li>`).join("")}
+                </ul>
+            </div>
+        `;
+            });
+        }
+
+    </script>
+</body>
+
+</html>

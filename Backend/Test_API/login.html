@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <title>Đăng ký & Đăng nhập</title>
+    <style>
+        body {
+            font-family: Arial;
+            max-width: 500px;
+            margin: auto;
+            padding: 20px;
+        }
+
+        h2 {
+            margin-top: 40px;
+            color: #333;
+        }
+
+        input {
+            display: block;
+            margin-bottom: 12px;
+            padding: 10px;
+            width: 100%;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+
+        button {
+            padding: 10px 16px;
+            border: none;
+            border-radius: 5px;
+            background-color: #007bff;
+            color: white;
+            cursor: pointer;
+            margin-right: 10px;
+        }
+
+        button:hover {
+            background-color: #0056b3;
+        }
+
+        .message {
+            margin-top: 15px;
+        }
+    </style>
+</head>
+<body>
+    <h2>Đăng ký</h2>
+    <input type="text" id="regUsername" placeholder="Tên người dùng" />
+    <input type="password" id="regPassword" placeholder="Mật khẩu" />
+    <input type="text" id="regRole" placeholder="Vai trò (Admin / Manager / Sale)" />
+    <button onclick="register()">Đăng ký</button>
+
+    <h2>Đăng nhập</h2>
+    <input type="text" id="loginUsername" placeholder="Tên người dùng" />
+    <input type="password" id="loginPassword" placeholder="Mật khẩu" />
+    <button onclick="login()">Đăng nhập</button>
+
+    <div class="message" id="message"></div>
+
+    <script>
+        const API_BASE = "https://localhost:44397/api";
+
+        const showMessage = (text, color) => {
+            const messageEl = document.getElementById("message");
+            messageEl.textContent = text;
+            messageEl.style.color = color;
+        };
+
+        async function register() {
+            const username = document.getElementById("regUsername").value.trim();
+            const password = document.getElementById("regPassword").value.trim();
+            const role = document.getElementById("regRole").value.trim();
+
+            if (!username || !password || !role) {
+                showMessage("Vui lòng nhập đầy đủ thông tin đăng ký", "red");
+                return;
+            }
+
+            try {
+                const res = await fetch(`${API_BASE}/Auth/Register`, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ username, password, role })
+                });
+
+                if (!res.ok) {
+                    const errText = await res.text();
+                    throw new Error(errText);
+                }
+
+                showMessage("✅ Đăng ký thành công!", "green");
+            } catch (err) {
+                showMessage(`❌ ${err.message}`, "red");
+            }
+        }
+
+        async function login() {
+            const username = document.getElementById("loginUsername").value.trim();
+            const password = document.getElementById("loginPassword").value.trim();
+
+            if (!username || !password) {
+                showMessage("Vui lòng nhập tài khoản và mật khẩu", "red");
+                return;
+            }
+
+            try {
+                const res = await fetch(`${API_BASE}/Auth/login`, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ username, password })
+                });
+
+                const data = await res.json();
+
+                if (!res.ok) {
+                    throw new Error(data.message || "Đăng nhập thất bại");
+                }
+
+                localStorage.setItem("jwtToken", data.token);
+                showMessage("✅ Đăng nhập thành công! Token đã được lưu", "green");
+                console.log("JWT Token:", data.token);
+            } catch (err) {
+                showMessage(`❌ ${err.message}`, "red");
+            }
+        }
+    </script>
+</body>
+</html>

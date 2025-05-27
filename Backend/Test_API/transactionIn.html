@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Nhập hàng từ Nhà cung cấp</title>
+  <style>
+    input, select, button { margin: 5px; }
+    table, th, td { border: 1px solid black; border-collapse: collapse; padding: 5px; }
+  </style>
+</head>
+<body>
+
+  <h2>Nhập hàng từ nhà cung cấp</h2>
+
+  <button onclick="login()">Đăng nhập (admin)</button><br>
+
+  <select id="supplierSelect" onchange="fetchProductsBySupplier()">
+    <option value="">-- Chọn nhà cung cấp --</option>
+  </select><br>
+
+  <label>Chọn sản phẩm từ nhà cung cấp:</label>
+  <select id="productSelect" onchange="onProductSelected()">
+    <option value="">-- Chọn sản phẩm --</option>
+  </select><br>
+
+  <div id="productForm" style="display: none;">
+    <label>Thông tin nhập hàng:</label><br>
+    <input type="number" id="quantity" placeholder="Số lượng">
+    <input type="number" id="unitPrice" placeholder="Giá nhập">
+    <button onclick="addProduct()">Thêm sản phẩm</button>
+  </div>
+
+  <h3>Danh sách sản phẩm sẽ nhập</h3>
+  <table>
+    <thead>
+      <tr><th>Tên</th><th>Số lượng</th><th>Giá</th><th>Xoá</th></tr>
+    </thead>
+    <tbody id="productList"></tbody>
+  </table>
+
+  <button onclick="submitTransaction()">Gửi nhập hàng</button>
+
+  <script>
+    const API_BASE = "https://localhost:44397/api";
+    let token = "";
+    let productDetails = [];
+    let currentProducts = [];
+
+    async function login() {
+      const res = await fetch(`${API_BASE}/Auth/login`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ username: "admin", password: "123456" })
+      });
+      const data = await res.json();
+      token = data.token;
+      alert("Đăng nhập thành công!");
+      fetchSuppliers();
+    }
+
+    async function fetchSuppliers() {
+      const res = await fetch(`${API_BASE}/Suppliers`, {
+        headers: { "Authorization": `Bearer ${token}` }
+      });
+      const suppliers = await res.json();
+      const select = document.getElementById("supplierSelect");
+      select.innerHTML = '<option value="">-- Chọn nhà cung cấp --</option>';
+      suppliers.forEach(s => {
+        const option = document.createElement("option");
+        option.value = s.id;
+        option.textContent = s.name || s.companyName || `Nhà cung cấp #${s.id}`;
+        select.appendChild(option);
+      });
+    }
+
+    async function fetchProductsBySupplier() {
+      const supplierId = document.getElementById("supplierSelect").value;
+      if (!supplierId) return;
+
+      const res = await fetch(`${API_BASE}/Product/${supplierId}/products`, {
+        headers: { "Authorization": `Bearer ${token}` }
+      });
+      const products = await res.json();
+      currentProducts = products;
+
+      const select = document.getElementById("productSelect");
+      select.innerHTML = '<option value="">-- Chọn sản phẩm --</option>';
+      products.forEach(p => {
+        const option = document.createElement("option");
+        option.value = p.id;
+        option.textContent = `${p.productName} (#${p.id})`;
+        select.appendChild(option);
+      });
+
+      document.getElementById("productForm").style.display = "none";
+    }
+
+    function onProductSelected() {
+      const selectedProductId = document.getElementById("productSelect").value;
+      if (selectedProductId) {
+        document.getElementById("productForm").style.display = "block";
+      } else {
+        document.getElementById("productForm").style.display = "none";
+      }
+    }
+
+    function addProduct() {
+      const productId = parseInt(document.getElementById("productSelect").value);
+      const quantity = parseInt(document.getElementById("quantity").value);
+      const unitPrice = parseFloat(document.getElementById("unitPrice").value);
+
+      if (!productId || !quantity || !unitPrice) {
+        alert("Vui lòng nhập đầy đủ thông tin.");
+        return;
+      }
+
+      const product = currentProducts.find(p => p.id === productId);
+      if (!product) {
+        alert("Sản phẩm không hợp lệ.");
+        return;
+      }
+
+      productDetails.push({
+        productId,
+        quantity,
+        unitPrice,
+        name: product.productName
+      });
+
+      renderProductList();
+      document.getElementById("productForm").style.display = "none";
+      document.getElementById("productSelect").value = "";
+      document.getElementById("quantity").value = "";
+      document.getElementById("unitPrice").value = "";
+    }
+
+    function renderProductList() {
+      const tbody = document.getElementById("productList");
+      tbody.innerHTML = "";
+      productDetails.forEach((p, index) => {
+        tbody.innerHTML += `
+          <tr>
+            <td>${p.name}</td>
+            <td>${p.quantity}</td>
+            <td>${p.unitPrice}</td>
+            <td><button onclick="removeProduct(${index})">Xoá</button></td>
+          </tr>
+        `;
+      });
+    }
+
+    function removeProduct(index) {
+      productDetails.splice(index, 1);
+      renderProductList();
+    }
+
+    async function submitTransaction() {
+      const supplierId = parseInt(document.getElementById("supplierSelect").value);
+      if (!supplierId || productDetails.length === 0) {
+        alert("Vui lòng chọn nhà cung cấp và thêm ít nhất 1 sản phẩm.");
+        return;
+      }
+
+      const body = {
+        supplierId,
+        transactionDate: new Date().toISOString(),
+        details: productDetails.map(p => ({
+          productId: p.productId,
+          quantity: p.quantity,
+          unitPrice: p.unitPrice
+        }))
+      };
+
+      const res = await fetch(`${API_BASE}/TransactionIn`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${token}`
+        },
+        body: JSON.stringify(body)
+      });
+
+      if (res.ok) {
+        alert("Nhập hàng thành công!");
+        productDetails = [];
+        renderProductList();
+      } else {
+        const err = await res.text();
+        alert("Lỗi: " + err);
+      }
+    }
+  </script>
+</body>
+</html>
