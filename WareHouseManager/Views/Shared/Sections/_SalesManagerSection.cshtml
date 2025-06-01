@@ -1,0 +1,176 @@
+@model List<WareHouseManager.Models.SalesManager>
+@{
+    var controllerName = ViewData["SalesManagerController"] as string ?? "Admin";
+    var addAction = ViewData["AddSalesManagerAction"] as string ?? "AddSalesManager";
+    var updateAction = ViewData["UpdateSalesManagerAction"] as string ?? "UpdateSalesManager";
+    var deleteAction = ViewData["DeleteSalesManagerAction"] as string ?? "DeleteSalesManager";
+}
+
+@* Sales Manager Section *@
+<div id="sales-manager-tab" class="tab-content" style="display: none;">
+    <div class="title-bar" style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px;">
+        <h3 style="margin: 0;">Sales Managers</h3>
+        <button type="button" class="btn btn-success" style="height: 38px;" onclick="showAddSalesManagerPopup()">
+            <i class="fas fa-plus"></i> Add Sales Manager
+        </button>
+    </div>
+    <div class="search-bar" style="display: flex; align-items: center; gap: 10px; margin-bottom: 16px;">
+        <input type="text" id="salesManagerSearch" placeholder="Search sales managers by name..." onkeyup="searchSalesManagers()" class="form-control" style="width: 300px;" />
+        <button type="button" onclick="searchSalesManagers()" class="btn btn-primary" style="height: 38px;">Search</button>
+    </div>
+    <div class="flash-card-container" id="salesManagerContainer">
+        @if (Model != null && Model.Count > 0)
+        {
+            foreach (var manager in Model)
+            {
+                <div class="flash-card" data-sales-manager-id="@manager.ManagerId">
+                    <div class="icon-container">
+                        @if (!string.IsNullOrEmpty(manager.Image))
+                        {
+                            <img src="@manager.Image" alt="Manager Image" class="icon-image" />
+                        }
+                        else
+                        {
+                            <span>No image</span>
+                        }
+                    </div>
+                    <div class="sales-manager-details">
+                        <h4>@manager.ManagerName</h4>
+                        <p>Email: @manager.Email</p>
+                        <p>Phone: @manager.Contact</p>
+                        <p>Username: @manager.Username</p>
+                    </div>
+                    <div class="sales-manager-actions">
+                        <button class="edit-button" type="button" onclick="openEditSalesManagerPopup(@manager.ManagerId)">
+                            <i class="fas fa-edit"></i> Edit
+                        </button>
+                        <form method="post" asp-action="@deleteAction" asp-controller="@controllerName" style="display:inline;" onsubmit="return confirm('Are you sure you want to delete this sales manager?');">
+                            <input type="hidden" name="id" value="@manager.ManagerId" />
+                            <button type="submit" class="delete-button">
+                                <i class="fas fa-trash"></i> Delete
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            }
+        }
+        else
+        {
+            <p>No sales managers found.</p>
+        }
+    </div>
+</div>
+
+<div id="add-sales-manager-popup" class="popup" style="display: none;">
+    <div class="popup-content">
+        <h3>Add Sales Manager</h3>
+        <form asp-antiforgery="true" method="post" asp-action="@addAction" asp-controller="@controllerName">
+            @Html.AntiForgeryToken()
+            <div class="form-group">
+                <label for="salesManagerName">Name</label>
+                <input type="text" id="salesManagerName" name="ManagerName" required maxlength="100" />
+            </div>
+            <div class="form-group">
+                <label for="salesManagerEmail">Email</label>
+                <input type="email" id="salesManagerEmail" name="Email" maxlength="100" />
+            </div>
+            <div class="form-group">
+                <label for="salesManagerContact">Phone</label>
+                <input type="text" id="salesManagerContact" name="Contact" maxlength="20" />
+            </div>
+            <div class="form-group">
+                <label for="salesManagerUsername">Username</label>
+                <input type="text" id="salesManagerUsername" name="Username" maxlength="50" />
+            </div>
+            <div class="form-group">
+                <label for="salesManagerPassword">Password</label>
+                <input type="password" id="salesManagerPassword" name="Password" maxlength="50" />
+            </div>
+            <div class="form-group">
+                <label for="salesManagerImage">Image URL</label>
+                <input type="text" id="salesManagerImage" name="Image" maxlength="300" />
+            </div>
+            <button type="submit" class="submit-button">Submit</button>
+            <button type="button" class="cancel-button" onclick="hideAddSalesManagerPopup()">Cancel</button>
+        </form>
+    </div>
+</div>
+
+<div id="edit-sales-manager-popup" class="popup" style="display: none;">
+    <div class="popup-content">
+        <h3>Edit Sales Manager</h3>
+        <form asp-antiforgery="true" method="post" asp-action="@updateAction" asp-controller="@controllerName">
+            @Html.AntiForgeryToken()
+            <input type="hidden" id="editSalesManagerId" name="ManagerId" />
+            <div class="form-group">
+                <label for="editSalesManagerName">Name</label>
+                <input type="text" id="editSalesManagerName" name="ManagerName" required maxlength="100" />
+            </div>
+            <div class="form-group">
+                <label for="editSalesManagerEmail">Email</label>
+                <input type="email" id="editSalesManagerEmail" name="Email" maxlength="100" />
+            </div>
+            <div class="form-group">
+                <label for="editSalesManagerContact">Phone</label>
+                <input type="text" id="editSalesManagerContact" name="Contact" maxlength="20" />
+            </div>
+            <div class="form-group">
+                <label for="editSalesManagerUsername">Username</label>
+                <input type="text" id="editSalesManagerUsername" name="Username" maxlength="50" />
+            </div>
+            <div class="form-group">
+                <label for="editSalesManagerPassword">Password</label>
+                <input type="password" id="editSalesManagerPassword" name="Password" maxlength="50" />
+            </div>
+            <div class="form-group">
+                <label for="editSalesManagerImage">Image URL</label>
+                <input type="text" id="editSalesManagerImage" name="Image" maxlength="300" />
+            </div>
+            <button type="submit" class="submit-button">Save</button>
+            <button type="button" class="cancel-button" onclick="hideEditSalesManagerPopup()">Cancel</button>
+        </form>
+    </div>
+</div>
+
+<script>
+function showAddSalesManagerPopup() {
+    document.getElementById('popup-overlay').style.display = 'block';
+    document.getElementById('add-sales-manager-popup').style.display = 'block';
+}
+function hideAddSalesManagerPopup() {
+    document.getElementById('popup-overlay').style.display = 'none';
+    document.getElementById('add-sales-manager-popup').style.display = 'none';
+}
+function openEditSalesManagerPopup(managerId) {
+    document.getElementById('popup-overlay').style.display = 'block';
+    const card = document.querySelector(`.flash-card[data-sales-manager-id='${managerId}']`);
+    if (!card) return;
+    document.getElementById('editSalesManagerId').value = managerId;
+    document.getElementById('editSalesManagerName').value = card.querySelector('.sales-manager-details h4').textContent;
+    document.getElementById('editSalesManagerEmail').value = card.querySelector('.sales-manager-details p:nth-child(2)').textContent.split(': ')[1];
+    document.getElementById('editSalesManagerContact').value = card.querySelector('.sales-manager-details p:nth-child(3)').textContent.split(': ')[1];
+    document.getElementById('editSalesManagerUsername').value = card.querySelector('.sales-manager-details p:nth-child(4)').textContent.split(': ')[1];
+    document.getElementById('editSalesManagerPassword').value = '';
+    document.getElementById('editSalesManagerImage').value = card.querySelector('.icon-container img')?.src || '';
+    document.getElementById('edit-sales-manager-popup').style.display = 'block';
+}
+function hideEditSalesManagerPopup() {
+    document.getElementById('popup-overlay').style.display = 'none';
+    document.getElementById('edit-sales-manager-popup').style.display = 'none';
+}
+function searchSalesManagers() {
+    var input = document.getElementById('salesManagerSearch').value.toLowerCase();
+    var cards = document.querySelectorAll('#salesManagerContainer .flash-card');
+    cards.forEach(function(card) {
+        var name = card.querySelector('.sales-manager-details h4').textContent.toLowerCase();
+        card.style.display = name.includes(input) ? '' : 'none';
+    });
+}
+// --- Tab stay logic using ViewData/ViewBag ---
+(function() {
+    console.log('Tab stay logic initialized');
+    
+
+   
+})();
+</script>

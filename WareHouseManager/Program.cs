@@ -20,6 +20,19 @@ namespace WareHouseManager
                 var connectionString = configuration.GetConnectionString("DefaultConnection");
                 return new UserRepository(connectionString);
             });
+            builder.Services.AddHttpContextAccessor();
+            builder.Services.AddScoped<WareHouseManager.Repositories.ProductRepository>();
+            builder.Services.AddScoped<WareHouseManager.Repositories.SupplierRepository>();
+            builder.Services.AddScoped<CustomerRepository>();
+            builder.Services.AddScoped<WarehouseManagerRepository>();
+            builder.Services.AddScoped<SalesManagerRepository>();
+            builder.Services.AddScoped<WareHouseManager.Repositories.TransactionInRepository>();
+            builder.Services.AddSession(options =>
+            {
+                options.IdleTimeout = TimeSpan.FromMinutes(30);
+                options.Cookie.HttpOnly = true;
+                options.Cookie.IsEssential = true;
+            });
 
             var app = builder.Build();
 
@@ -34,7 +47,7 @@ namespace WareHouseManager
             app.UseStaticFiles();
 
             app.UseRouting();
-
+            app.UseSession();
             app.UseAuthorization();
 
             app.MapControllerRoute(

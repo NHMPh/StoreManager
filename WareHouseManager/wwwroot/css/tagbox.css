@@ -1,0 +1,40 @@
+/* Tagbox for product entry in supplier form */
+.tagbox {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  padding: 4px 6px;
+  min-height: 38px;
+  background: #fff;
+}
+.tagbox input {
+  border: none;
+  outline: none;
+  flex: 1;
+  min-width: 120px;
+  padding: 4px;
+  font-size: 1rem;
+}
+.tagbox .tag {
+  background: #e0e7ff;
+  color: #1e40af;
+  border-radius: 3px;
+  padding: 3px 8px;
+  margin: 2px 4px 2px 0;
+  display: flex;
+  align-items: center;
+  font-size: 0.95rem;
+}
+.tagbox .tag .remove-tag {
+  margin-left: 6px;
+  color: #888;
+  cursor: pointer;
+  font-weight: bold;
+  font-size: 1.1em;
+  transition: color 0.2s;
+}
+.tagbox .tag .remove-tag:hover {
+  color: #e11d48;
+}

@@ -1,0 +1,225 @@
+@model List<WareHouseManager.Models.Product>
+@{
+    var controllerName = ViewData["ProductController"] as string ?? "Admin";
+    var addAction = ViewData["AddProductAction"] as string ?? "AddProduct";
+    var updateAction = ViewData["UpdateProductAction"] as string ?? "UpdateProduct";
+    var deleteAction = ViewData["DeleteProductAction"] as string ?? "DeleteProduct";
+    var activeTab = ViewData["ActiveTab"] as string ?? "product-tab";
+    var displayStyle = activeTab == "product-tab" ? "block" : "none";
+}
+
+@* Products Section *@
+<div id="product-tab" class="tab-content" style="display: @displayStyle;">
+    <div class="title-bar" style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px;">
+        <h3 style="margin: 0;">Products</h3>
+        <button type="button" class="btn btn-success" style="height: 38px;" onclick="showAddProductPopup()">
+            <i class="fas fa-plus"></i> Add Product
+        </button>
+    </div>
+    <div class="search-bar" style="display: flex; align-items: center; gap: 10px; margin-bottom: 16px;">
+        <input type="text" id="productSearch" placeholder="Search products by name..." onkeyup="searchProducts()" class="form-control" style="width: 300px;" />
+        <button type="button" onclick="searchProducts()" class="btn btn-primary" style="height: 38px;">Search</button>
+    </div>
+    <div class="flash-card-container" id="productContainer">
+        @if (Model != null && Model.Count > 0)
+        {
+            @foreach (var product in Model)
+            {
+                <div class="flash-card" data-product-id="@product.ProductId">
+                    <div class="icon-container">
+                        @if (!string.IsNullOrEmpty(product.ImageData))
+                        {
+                            <img src="data:image/png;base64,@product.ImageData" alt="Product Image" class="icon-image" />
+                        }
+                        else
+                        {
+                            <span>No image</span>
+                        }
+                    </div>
+                    <div class="product-details">
+                        <h4>@product.ProductName</h4>
+                        <p>Unit: @product.Unit</p>
+                        <p>Cost Per Unit: $@product.CostPerUnit</p>
+                        <p>Stock: @product.Stock</p>
+                    </div>
+                    <div class="product-actions">
+                        <button class="edit-button" type="button" onclick="openEditProductPopup(@product.ProductId)">
+                            <i class="fas fa-edit"></i> Edit
+                        </button>
+                        <form method="post" asp-action="@deleteAction" asp-controller="@controllerName" style="display:inline;" onsubmit="return confirm('Are you sure you want to delete this product?');">
+                            <input type="hidden" name="id" value="@product.ProductId" />
+                            <button type="submit" class="delete-button">
+                                <i class="fas fa-trash"></i> Delete
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            }
+        }
+        else
+        {
+            <p>No products found.</p>
+        }
+    </div>
+</div>
+
+<div id="add-product-popup" class="popup" style="display: none;">
+    <div class="popup-content">
+        <h3>Add Product</h3>
+        <form asp-antiforgery="true" method="post" enctype="multipart/form-data" asp-action="@addAction" asp-controller="@controllerName" onsubmit="return ensureImageDataBeforeSubmit('')">
+            @Html.AntiForgeryToken()
+            <div class="form-group">
+                <label for="productName">Product Name</label>
+                <input type="text" id="productName" name="ProductName" required maxlength="100" />
+            </div>
+            <div class="form-group">
+                <label for="productCode">Product Code</label>
+                <input type="text" id="productCode" name="ProductCode" maxlength="50" />
+            </div>
+            <div class="form-group">
+                <label for="category">Category</label>
+                <input type="text" id="category" name="Category" maxlength="50" />
+            </div>
+            <div class="form-group">
+                <label for="unit">Unit</label>
+                <input type="text" id="unit" name="Unit" required maxlength="50" />
+            </div>
+            <div class="form-group">
+                <label for="quantity">Quantity</label>
+                <input type="number" id="quantity" name="Stock" min="0" required />
+            </div>
+            <div class="form-group">
+                <label for="importPrice">Import Price</label>
+                <input type="number" id="importPrice" name="CostPerUnit" step="0.01" min="0" required />
+            </div>
+            <div class="form-group">
+                <label for="salePrice">Sale Price</label>
+                <input type="number" id="salePrice" name="SalePrice" step="0.01" min="0" />
+            </div>
+            <div class="form-group">
+                <label for="promotion">Promotion</label>
+                <input type="text" id="promotion" name="Promotion" maxlength="100" />
+            </div>
+            <div class="form-group">
+                <label for="supplierId">Supplier ID</label>
+                <input type="number" id="supplierId" name="SupplierId" min="0" />
+            </div>
+            <div class="form-group">
+                <label for="imageData">Image</label>
+                <input type="file" id="imageDataFile" name="ImageFile" accept="image/*" onchange="convertImageToBase64(event, '')" />
+                <input type="hidden" id="imageData" name="ImageData" />
+            </div>
+            <button type="submit" class="submit-button">Submit</button>
+            <button type="button" class="cancel-button" onclick="hideAddProductPopup()">Cancel</button>
+        </form>
+    </div>
+</div>
+
+<div id="edit-product-popup" class="popup" style="display: none;">
+    <div class="popup-content">
+        <h3>Edit Product</h3>
+        <form asp-antiforgery="true" method="post" enctype="multipart/form-data" asp-action="@updateAction" asp-controller="@controllerName" onsubmit="return ensureImageDataBeforeSubmit('edit')">
+            @Html.AntiForgeryToken()
+            <input type="hidden" id="editProductId" name="ProductId" />
+            <div class="form-group">
+                <label for="editProductName">Product Name</label>
+                <input type="text" id="editProductName" name="ProductName" required maxlength="100" />
+            </div>
+            <div class="form-group">
+                <label for="editProductCode">Product Code</label>
+                <input type="text" id="editProductCode" name="ProductCode" maxlength="50" />
+            </div>
+            <div class="form-group">
+                <label for="editCategory">Category</label>
+                <input type="text" id="editCategory" name="Category" maxlength="50" />
+            </div>
+            <div class="form-group">
+                <label for="editUnit">Unit</label>
+                <input type="text" id="editUnit" name="Unit" required maxlength="50" />
+            </div>
+            <div class="form-group">
+                <label for="editQuantity">Quantity</label>
+                <input type="number" id="editQuantity" name="Stock" min="0" required />
+            </div>
+            <div class="form-group">
+                <label for="editImportPrice">Import Price</label>
+                <input type="number" id="editImportPrice" name="CostPerUnit" step="0.01" min="0" required />
+            </div>
+            <div class="form-group">
+                <label for="editSalePrice">Sale Price</label>
+                <input type="number" id="editSalePrice" name="SalePrice" step="0.01" min="0" />
+            </div>
+            <div class="form-group">
+                <label for="editPromotion">Promotion</label>
+                <input type="text" id="editPromotion" name="Promotion" maxlength="100" />
+            </div>
+            <div class="form-group">
+                <label for="editSupplierId">Supplier ID</label>
+                <input type="number" id="editSupplierId" name="SupplierId" min="0" />
+            </div>
+            <div class="form-group">
+                <label for="editImageData">Image</label>
+                <input type="file" id="editImageDataFile" name="ImageFile" accept="image/*" onchange="convertImageToBase64(event, 'edit')" />
+                <input type="hidden" id="editImageData" name="ImageData" />
+            </div>
+            <button type="submit" class="submit-button">Save</button>
+            <button type="button" class="cancel-button" onclick="hideEditProductPopup()">Cancel</button>
+        </form>
+    </div>
+</div>
+
+<script>
+function convertImageToBase64(event, prefix = '') {
+    const file = event.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = function(e) {
+        const base64 = e.target.result.split(',')[1];
+        document.getElementById(prefix + 'ImageData').value = base64;
+        document.getElementById('imageData').value = base64; // Hide the file input after conversion
+    };
+    reader.readAsDataURL(file);
+}
+function ensureImageDataBeforeSubmit(prefix = '') {
+    var base64 = document.getElementById(prefix + 'ImageData').value;
+    document.getElementById('imageData').value = base64;
+    if (!base64) {
+       
+    }
+    return true;
+}
+function openEditProductPopup(productId) {
+    // Find the product card
+     document.getElementById('popup-overlay').style.display = 'block';
+    const card = document.querySelector(`.flash-card[data-product-id='${productId}']`);
+    if (!card) return;
+    document.getElementById('editProductId').value = productId;
+    document.getElementById('editProductName').value = card.querySelector('.product-details h4').textContent;
+    document.getElementById('editProductCode').value = card.querySelector('.product-details [data-field="ProductCode"]')?.textContent || '';
+    document.getElementById('editCategory').value = card.querySelector('.product-details [data-field="Category"]')?.textContent || '';
+    document.getElementById('editUnit').value = card.querySelector('.product-details p:nth-child(2)').textContent.split(': ')[1];
+    document.getElementById('editQuantity').value = card.querySelector('.product-details p:nth-child(4)').textContent.split(': ')[1];
+    document.getElementById('editImportPrice').value = card.querySelector('.product-details p:nth-child(3)').textContent.split(': $')[1];
+    document.getElementById('editSalePrice').value = '';
+    document.getElementById('editPromotion').value = '';
+    document.getElementById('editSupplierId').value = '';
+    document.getElementById('editImageData').value = card.querySelector('.icon-container img')?.src?.split(',')[1] || '';
+    document.getElementById('edit-product-popup').style.display = 'block';
+}
+function hideEditProductPopup() {
+     document.getElementById('popup-overlay').style.display = 'none';
+    document.getElementById('edit-product-popup').style.display = 'none';
+}
+// --- Tab stay logic using ViewData/ViewBag ---
+(function() {
+    var activeTab = '@(ViewData["ActiveTab"] ?? "")';
+    if (activeTab && typeof showTab === 'function') {
+        window.addEventListener('DOMContentLoaded', function() {
+            setTimeout(function() {
+                showTab(activeTab);
+            }, 0);
+        });
+    }
+})();
+</script>
+

@@ -1,12 +1,31 @@
+using System.ComponentModel.DataAnnotations;
+using System.Collections.Generic;
+using System.Text.Json.Serialization;
+
 namespace WareHouseManager.Models
 {
     public class Supplier
     {
-        public int SupplierId { get; set; }
-        public string SupplierName { get; set; }
-        public string Email { get; set; }
-        public string Mobile { get; set; }
-        public string Address { get; set; }
-        public string Image { get; set; } // URL or path to the supplier image
+        [JsonPropertyName("id")]
+        public int Id { get; set; }
+        [Required(ErrorMessage = "Supplier name is required.")]
+        [StringLength(100)]
+        [JsonPropertyName("name")]
+        public string? Name { get; set; }
+        [Required(ErrorMessage = "Email is required.")]
+        [EmailAddress(ErrorMessage = "Invalid email address.")]
+        [StringLength(100)]
+        [JsonPropertyName("email")]
+        public string? Email { get; set; }
+        [Required(ErrorMessage = "Mobile is required.")]
+        [StringLength(20)]
+        [JsonPropertyName("mobile")]
+        public string? Mobile { get; set; }
+        [Required(ErrorMessage = "Address is required.")]
+        [StringLength(200)]
+        [JsonPropertyName("address")]
+        public string? Address { get; set; }
+        [JsonPropertyName("products")]
+        public List<Product>? Products { get; set; }
     }
 }

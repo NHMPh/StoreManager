@@ -1,5 +1,7 @@
 using MySql.Data.MySqlClient;
 using System;
+using System.Text;
+using System.Text.Json;
 using WareHouseManager.Models;
 
 namespace WareHouseManager.Repositories
@@ -13,32 +15,37 @@ namespace WareHouseManager.Repositories
             _connectionString = connectionString;
         }
 
-        public LoginModel AuthenticateUser(string username, string password)
+       public async Task<(LoginModel user, string token)> AuthenticateUserAsync(string username, string password)
         {
-            using (var connection = new MySqlConnection(_connectionString))
+            using (var client = new HttpClient())
             {
-                connection.Open();
-                var query = "SELECT Username, Role FROM Users WHERE Username = @Username AND Password = @Password";
-                using (var command = new MySqlCommand(query, connection))
+                var apiUrl = "https://modest-gould.103-28-36-75.plesk.page/api/Auth/login"; 
+                var payload = new
                 {
-                    command.Parameters.AddWithValue("@Username", username);
-                    command.Parameters.AddWithValue("@Password", password);
+                    Username = username,
+                    Password = password
+                };
+                var content = new StringContent(JsonSerializer.Serialize(payload), Encoding.UTF8, new System.Net.Http.Headers.MediaTypeHeaderValue("application/json"));
 
-                    using (var reader = command.ExecuteReader())
+                var response = await client.PostAsync(apiUrl, content);
+                if (response.IsSuccessStatusCode)
+                {
+                    var json = await response.Content.ReadAsStringAsync();
+                    Console.WriteLine($"Response JSON: {json}");
+                    using (var doc = JsonDocument.Parse(json))
                     {
-                        if (reader.Read())
+                        var root = doc.RootElement;
+                        var token = root.GetProperty("token").GetString();
+                        var user = new LoginModel
                         {
-                            return new LoginModel
-                            {
-                                Username = reader.GetString("Username"),
-                                Role = reader.GetString("Role")
-                            };
-                        }
+                            Username = "admin",
+                            Role = "Admin",
+                        };
+                        return (user, token);
                     }
                 }
             }
-
-            return null;
+            return (null, null);
         }
     }
 }

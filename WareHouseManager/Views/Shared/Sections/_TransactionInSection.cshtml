@@ -1,0 +1,177 @@
+@* Transaction In Section *@
+@{
+    var suppliers = ViewData["AllSuppliers"] as List<WareHouseManager.Models.Supplier>;
+    var products = ViewData["AllProducts"] as List<WareHouseManager.Models.Product>;
+    var controllerName = ViewData["TransactionInController"] as string ?? "Admin";
+    var addAction = ViewData["AddTransactionInAction"] as string ?? "CreateTransactionIn";
+    var activeTab = ViewData["ActiveTab"] as string ?? "product-tab";
+    var displayStyle = activeTab == "transaction-tab" ? "block" : "none";
+}
+<div id="transaction-tab" class="tab-content" style="display: @displayStyle;">
+    <div class="title-bar"
+        style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px;">
+        <h3 style="margin: 0;">Transaction</h3>
+        <button type="button" class="btn btn-success" style="height: 38px;" onclick="showAddTransactionInPopup()">
+            <i class="fas fa-plus"></i> Add Transaction
+        </button>
+    </div>
+    <div class="transaction-panel">
+        <div class="form-group">
+            <label for="supplierSelect">Select Supplier</label>
+            <select id="supplierSelect" class="form-control">
+                <option value="">-- Select Supplier --</option>
+                @if (suppliers != null)
+                {
+                    foreach (var supplier in suppliers)
+                    {
+                        <option value="@supplier.Id">@supplier.Name</option>
+                    }
+                }
+            </select>
+        </div>
+        <div class="form-group">
+            <label for="productSelect">Select Product</label>
+            <select id="productSelect" class="form-control" onchange="updateProductInfo()">
+                <option value="">-- Select Product --</option>
+                @if (products != null)
+                {
+                    foreach (var product in products)
+                    {
+                        <option value="@product.ProductId" data-stock="@product.Stock" data-price="@product.CostPerUnit">
+                            @product.ProductName</option>
+                    }
+                }
+            </select>
+        </div>
+        <div class="product-info">
+            <p>Stock: <span id="productStock">N/A</span></p>
+            <p>Price per Unit: $<span id="productPrice">N/A</span></p>
+        </div>
+        <div class="form-group">
+            <label for="productQuantity">Quantity</label>
+            <input type="number" id="productQuantity" class="form-control" min="1" onchange="updateTotalAmount()" />
+        </div>
+        <div class="form-group">
+            <label for="totalAmount">Total Amount</label>
+            <input type="text" id="totalAmount" class="form-control" readonly />
+        </div>
+        <button class="add-button" onclick="addPendingOrder()">Add to Pending Orders</button>
+    </div>
+    <div class="pending-orders">
+        <h4>Pending Orders</h4>
+        <table class="styled-table">
+            <thead>
+                <tr>
+                    <th>Supplier</th>
+                    <th>Product</th>
+                    <th>Quantity</th>
+                    <th>Total</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody id="pendingOrdersTable">
+                <!-- Dynamically populated rows -->
+            </tbody>
+        </table>
+    </div>
+    <div class="payment-panel">
+        <h4>Payment</h4>
+        <div class="form-group">
+            <label for="totalPayable">Total Payable</label>
+            <input type="text" id="totalPayable" class="form-control" readonly />
+        </div>
+        <div class="form-group">
+            <label for="amountPaid">Amount Paid</label>
+            <input type="number" id="amountPaid" class="form-control" min="0" onchange="updateRemainingBalance()" />
+        </div>
+        <div class="form-group">
+            <p>Remaining Balance: $<span id="remainingBalance">0.00</span></p>
+        </div>
+        <button class="submit-button" type="button" onclick="processPayment()">Pay</button>
+    </div>
+</div>
+
+<!-- Hidden form for submitting TransactionIn -->
+<form id="addTransactionInForm" asp-antiforgery="true" method="post" asp-action="@addAction" asp-controller="@controllerName" style="display:none;">
+    <input type="hidden" name="transactionInJson" id="transactionInJson" />
+</form>
+
+<script src="/js/dashboard.js"></script>
+<!-- Add script to build and submit transactionIn form -->
+<script>
+// Ensure the Razor-serialized JS objects are set after the DOM is ready
+window.addEventListener('DOMContentLoaded', function() {
+    // Use Html.Raw to avoid double encoding and ensure valid JSON
+    window.suppliersList = JSON.parse('@Html.Raw(System.Text.Json.JsonSerializer.Serialize(suppliers ?? new List<WareHouseManager.Models.Supplier>()))');
+    window.productsList = JSON.parse('@Html.Raw(System.Text.Json.JsonSerializer.Serialize(products ?? new List<WareHouseManager.Models.Product>()))');
+    console.log('Suppliers List:', window.suppliersList);
+    console.log('Products List:', window.productsList);
+});
+
+    //Helper to get supplier and product objects from lists
+    
+    function getSupplierById(id) {
+        if (!window.suppliersList) return null;
+        // id may be string, ensure type match
+        return window.suppliersList.find(s => String(s.id) === String(id));
+    }
+    function getProductById(id) {
+        if (!window.productsList) return null;
+        return window.productsList.find(p => String(p.productId ?? p.id) === String(id));
+    }
+
+     
+function processPayment() {
+        // Get selected supplier
+    const supplierId = document.getElementById('supplierSelect').value;
+    console.log('Selected Supplier ID:', supplierId);
+    const supplierObj = getSupplierById(supplierId);
+    console.log('Selected Supplier Object:', supplierObj);
+    // Build details from pending orders table
+    const table = document.getElementById('pendingOrdersTable');
+    const details = [];
+    for (const row of table.rows) { 
+        const productId = row.cells[1].textContent;
+        const quantity = parseInt(row.cells[2].textContent);
+        const total = parseFloat(row.cells[3].textContent.replace('$',''));
+        const productObj = getProductById(productId);
+        if (productObj) {
+            details.push({
+                id: 0,
+                transactionInId: 0,
+                transactionIn: null,
+                productId: productObj.productId || productObj.id,
+                product: productObj,
+                quantity: quantity,
+                unitPrice: productObj.costPerUnit || productObj.importPrice || 0
+            });
+        }
+    }
+    if (!supplierObj || details.length === 0) {
+        alert('Please select a supplier and add at least one product.');
+        return;
+    }
+    // Build TransactionIn object
+    const transactionIn = {
+        id: 0,
+        transactionDate: new Date().toISOString(),
+        supplierId: supplierObj.id,
+        supplier: supplierObj,
+        details: details
+    };
+    document.getElementById('transactionInJson').value = JSON.stringify(transactionIn);
+    console.log('Transaction In JSON:', document.getElementById('transactionInJson').value);
+    document.getElementById('addTransactionInForm').submit();
+} 
+    
+    function showAddTransactionInPopup() {
+        document.getElementById('popup-overlay').style.display = 'block';
+        document.getElementById('add-transactionin-popup').style.display = 'block';
+  }  
+    function hideAddTransactionInPopup() {
+    document.getElementById('popup-overlay').style.display = 'none';
+    document.getElementById('add-transactionin-popup').style.display = 'none';
+}
+
+
+</script>

@@ -21,30 +21,30 @@ namespace WareHouseManager.Controllers
         }
 
         [HttpPost]
-        public IActionResult Login(LoginModel model)
+        public async Task<IActionResult> Login(LoginModel model)
         {
             if (ModelState.IsValid)
             {
-                var user = _userRepository.AuthenticateUser(model.Username, model.Password);
-                if (user != null)
+                var user = await _userRepository.AuthenticateUserAsync(model.Username, model.Password);
+                if (user.user != null && !string.IsNullOrEmpty(user.token))
                 {
-                    if (user.Role == "Admin" && model.Role == "Admin")
+                    // Store token in session
+                    HttpContext.Session.SetString("AuthToken", user.token);
+                    if (user.user.Role == "Admin" && model.Role == "Admin")
                     {
                         return RedirectToAction("Dashboard", "Admin");
                     }
-                    else if (user.Role == "WarehouseManager"&& model.Role == "WarehouseManager")
+                    else if (user.user.Role == "WarehouseManager" && model.Role == "WarehouseManager")
                     {
                         return RedirectToAction("Dashboard", "Warehouse");
                     }
-                    else if (user.Role == "SalesManager"&& model.Role == "SalesManager")
+                    else if (user.user.Role == "SalesManager" && model.Role == "SalesManager")
                     {
                         return RedirectToAction("Dashboard", "Sales");
                     }
                 }
-
                 ModelState.AddModelError("", "Invalid username, password, or role.");
             }
-
             return View(model);
         }
     }

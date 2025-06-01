@@ -7,28 +7,20 @@ function showTab(tabId) {
 }
 
 function showAddProductPopup() {
+    console.log('showAddProductPopup called');
+   showBlurredBackground();
     document.getElementById('add-product-popup').style.display = 'block';
-
-    // Reset form fields
-    document.getElementById('productId').value = '';
-    document.getElementById('productName').value = '';
-    document.getElementById('unit').value = '';
-    document.getElementById('costPerUnit').value = '';
-    document.getElementById('stock').value = '';
-
-    let overlay = document.getElementById('popup-overlay');
-    if (!overlay) {
-        overlay = document.createElement('div');
-        overlay.id = 'popup-overlay';
-        overlay.className = 'popup-overlay';
-        document.body.appendChild(overlay);
-    }
-    overlay.style.display = 'block'; // Show overlay
 }
-
+function showBlurredBackground() {
+    document.getElementById('popup-overlay').style.display = 'block';
+}
+function hideBlurredBackground() {
+    document.getElementById('popup-overlay').style.display = 'none';
+}
 function hideAddProductPopup() {
+    console.log('hideAddProductPopup called');
     document.getElementById('add-product-popup').style.display = 'none';
-    document.getElementById('popup-overlay').style.display = 'none'; // Hide overlay
+    hideBlurredBackground();
 }
 
 function searchProducts() {
@@ -196,39 +188,37 @@ function removePendingOrder(button) {
 function updateTotalPayable() {
     const table = document.getElementById('pendingOrdersTable');
     let totalPayable = 0;
-
     for (const row of table.rows) {
         const totalCell = row.cells[3];
-        const total = parseFloat(totalCell.textContent.replace('$', '')) || 0;
-        totalPayable += total;
+        if (totalCell && totalCell.textContent) {
+            totalPayable += parseFloat(totalCell.textContent.replace('$', '')) || 0;
+        }
     }
-
     document.getElementById('totalPayable').value = `$${totalPayable.toFixed(2)}`;
     updateRemainingBalance();
 }
 
 function updateRemainingBalance() {
-    const totalPayable = parseFloat(document.getElementById('totalPayable').value.replace('$', '')) || 0;
+    const totalPayable = parseFloat((document.getElementById('totalPayable').value || '').replace('$', '')) || 0;
     const amountPaid = parseFloat(document.getElementById('amountPaid').value) || 0;
     const remainingBalance = totalPayable - amountPaid;
-
     document.getElementById('remainingBalance').textContent = remainingBalance.toFixed(2);
 }
 
-function processPayment() {
-    const remainingBalance = parseFloat(document.getElementById('remainingBalance').textContent) || 0;
+// function processPayment() {
+//     const remainingBalance = parseFloat(document.getElementById('remainingBalance').textContent) || 0;
 
-    if (remainingBalance > 0) {
-        alert('Please pay the full amount.');
-        return;
-    }
+//     if (remainingBalance > 0) {
+//         alert('Please pay the full amount.');
+//         return;
+//     }
 
-    alert('Payment successful!');
-    document.getElementById('pendingOrdersTable').innerHTML = '';
-    document.getElementById('totalPayable').value = '$0.00';
-    document.getElementById('amountPaid').value = '';
-    document.getElementById('remainingBalance').textContent = '0.00';
-}
+//     alert('Payment successful!');
+//     document.getElementById('pendingOrdersTable').innerHTML = '';
+//     document.getElementById('totalPayable').value = '$0.00';
+//     document.getElementById('amountPaid').value = '';
+//     document.getElementById('remainingBalance').textContent = '0.00';
+// }
 
 function updateProductInfoOut() {
     const productSelect = document.getElementById('productSelectOut');

@@ -17,6 +17,10 @@
       "PackagePath": "staticwebassets\\css\\site.css"
     },
     {
+      "Id": "C:\\Users\\Phu\\source\\repos\\WareHouseManager\\WareHouseManager\\wwwroot\\css\\tagbox.css",
+      "PackagePath": "staticwebassets\\css\\tagbox.css"
+    },
+    {
       "Id": "C:\\Users\\Phu\\source\\repos\\WareHouseManager\\WareHouseManager\\wwwroot\\favicon.ico",
       "PackagePath": "staticwebassets\\favicon.ico"
     },
@@ -31,6 +35,10 @@
     {
       "Id": "C:\\Users\\Phu\\source\\repos\\WareHouseManager\\WareHouseManager\\wwwroot\\js\\site.js",
       "PackagePath": "staticwebassets\\js\\site.js"
+    },
+    {
+      "Id": "C:\\Users\\Phu\\source\\repos\\WareHouseManager\\WareHouseManager\\wwwroot\\js\\tagbox-supplier.js",
+      "PackagePath": "staticwebassets\\js\\tagbox-supplier.js"
     },
     {
       "Id": "C:\\Users\\Phu\\source\\repos\\WareHouseManager\\WareHouseManager\\wwwroot\\lib\\bootstrap\\LICENSE",

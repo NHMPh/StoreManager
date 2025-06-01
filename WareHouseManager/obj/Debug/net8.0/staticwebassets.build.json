@@ -1,6 +1,6 @@
 {
   "Version": 1,
-  "Hash": "+trdzzlEkLULqOmnaUCLUoqtNss1SoKvSHg7Y9DYFh8=",
+  "Hash": "hk97JcnxvrcWvdsHkhIlgfVci6Td+54tsQbK7jpVJBE=",
   "Source": "WareHouseManager",
   "BasePath": "_content/WareHouseManager",
   "Mode": "Default",
@@ -93,6 +93,25 @@
       "OriginalItemSpec": "wwwroot\\css\\site.css"
     },
     {
+      "Identity": "C:\\Users\\Phu\\source\\repos\\WareHouseManager\\WareHouseManager\\wwwroot\\css\\tagbox.css",
+      "SourceId": "WareHouseManager",
+      "SourceType": "Discovered",
+      "ContentRoot": "C:\\Users\\Phu\\source\\repos\\WareHouseManager\\WareHouseManager\\wwwroot\\",
+      "BasePath": "_content/WareHouseManager",
+      "RelativePath": "css/tagbox.css",
+      "AssetKind": "All",
+      "AssetMode": "All",
+      "AssetRole": "Primary",
+      "AssetMergeBehavior": "PreferTarget",
+      "AssetMergeSource": "",
+      "RelatedAsset": "",
+      "AssetTraitName": "",
+      "AssetTraitValue": "",
+      "CopyToOutputDirectory": "Never",
+      "CopyToPublishDirectory": "PreserveNewest",
+      "OriginalItemSpec": "wwwroot\\css\\tagbox.css"
+    },
+    {
       "Identity": "C:\\Users\\Phu\\source\\repos\\WareHouseManager\\WareHouseManager\\wwwroot\\favicon.ico",
       "SourceId": "WareHouseManager",
       "SourceType": "Discovered",
@@ -167,6 +186,25 @@
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
       "OriginalItemSpec": "wwwroot\\js\\site.js"
+    },
+    {
+      "Identity": "C:\\Users\\Phu\\source\\repos\\WareHouseManager\\WareHouseManager\\wwwroot\\js\\tagbox-supplier.js",
+      "SourceId": "WareHouseManager",
+      "SourceType": "Discovered",
+      "ContentRoot": "C:\\Users\\Phu\\source\\repos\\WareHouseManager\\WareHouseManager\\wwwroot\\",
+      "BasePath": "_content/WareHouseManager",
+      "RelativePath": "js/tagbox-supplier.js",
+      "AssetKind": "All",
+      "AssetMode": "All",
+      "AssetRole": "Primary",
+      "AssetMergeBehavior": "PreferTarget",
+      "AssetMergeSource": "",
+      "RelatedAsset": "",
+      "AssetTraitName": "",
+      "AssetTraitValue": "",
+      "CopyToOutputDirectory": "Never",
+      "CopyToPublishDirectory": "PreserveNewest",
+      "OriginalItemSpec": "wwwroot\\js\\tagbox-supplier.js"
     },
     {
       "Identity": "C:\\Users\\Phu\\source\\repos\\WareHouseManager\\WareHouseManager\\wwwroot\\lib\\bootstrap\\dist\\css\\bootstrap.css",

@@ -1,0 +1,160 @@
+@model List<WareHouseManager.Models.Customer>
+@{
+    var controllerName = ViewData["CustomerController"] as string ?? "Admin";
+    var addAction = ViewData["AddCustomerAction"] as string ?? "AddCustomer";
+    var updateAction = ViewData["UpdateCustomerAction"] as string ?? "UpdateCustomer";
+    var deleteAction = ViewData["DeleteCustomerAction"] as string ?? "DeleteCustomer";
+    var activeTab = ViewData["ActiveTab"] as string ?? "product-tab";
+    var displayStyle = activeTab == "customer-tab" ? "block" : "none";
+}
+
+
+@* Customers Section *@
+<div id="customer-tab" class="tab-content" style="display: @displayStyle;">
+    <div class="title-bar" style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px;">
+        <h3 style="margin: 0;">Customers</h3>
+        <button type="button" class="btn btn-success" style="height: 38px;" onclick="showAddCustomerPopup()">
+            <i class="fas fa-plus"></i> Add Customer
+        </button>
+    </div>
+    <div class="search-bar" style="display: flex; align-items: center; gap: 10px; margin-bottom: 16px;">
+        <input type="text" id="customerSearch" placeholder="Search customers by name..." onkeyup="searchCustomers()" class="form-control" style="width: 300px;" />
+        <button type="button" onclick="searchCustomers()" class="btn btn-primary" style="height: 38px;">Search</button>
+    </div>
+    <div class="flash-card-container" id="customerContainer">
+        @if (Model != null && Model.Count > 0)
+        {
+            foreach (var customer in Model)
+            {
+                <div class="flash-card" data-customer-id="@customer.Id">
+                    <div class="icon-container">
+                        <span>No image</span>
+                    </div>
+                    <div class="customer-details">
+                        <h4>@customer.FullName</h4>
+                        <p>Email: @customer.Email</p>
+                        <p>Phone: @customer.Phone</p>
+                        <p>Address: @customer.Address</p>
+                    </div>
+                    <div class="customer-actions">
+                        <button class="edit-button" type="button" onclick="openEditCustomerPopup(@customer.Id)">
+                            <i class="fas fa-edit"></i> Edit
+                        </button>
+                        <form method="post" asp-action="@deleteAction" asp-controller="@controllerName" style="display:inline;" onsubmit="return confirm('Are you sure you want to delete this customer?');">
+                            <input type="hidden" name="id" value="@customer.Id" />
+                            <button type="submit" class="delete-button">
+                                <i class="fas fa-trash"></i> Delete
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            }
+        }
+        else
+        {
+            <p>No customers found.</p>
+        }
+    </div>
+</div>
+
+<div id="add-customer-popup" class="popup" style="display: none;">
+    <div class="popup-content">
+        <h3>Add Customer</h3>
+        <form asp-antiforgery="true" method="post" asp-action="@addAction" asp-controller="@controllerName">
+            @Html.AntiForgeryToken()
+            <div class="form-group">
+                <label for="customerName">Full Name</label>
+                <input type="text" id="customerName" name="FullName" required maxlength="100" />
+            </div>
+            <div class="form-group">
+                <label for="customerEmail">Email</label>
+                <input type="email" id="customerEmail" name="Email" maxlength="100" />
+            </div>
+            <div class="form-group">
+                <label for="customerMobile">Phone</label>
+                <input type="text" id="customerMobile" name="Phone" maxlength="20" />
+            </div>
+            <div class="form-group">
+                <label for="customerAddress">Address</label>
+                <input type="text" id="customerAddress" name="Address" maxlength="200" />
+            </div>
+            <div class="form-group">
+                <label for="customerImage">Image URL</label>
+                <input type="text" id="customerImage" name="Image" maxlength="300" />
+            </div>
+            <button type="submit" class="submit-button">Submit</button>
+            <button type="button" class="cancel-button" onclick="hideAddCustomerPopup()">Cancel</button>
+        </form>
+    </div>
+</div>
+
+<div id="edit-customer-popup" class="popup" style="display: none;">
+    <div class="popup-content">
+        <h3>Edit Customer</h3>
+        <form asp-antiforgery="true" method="post" asp-action="@updateAction" asp-controller="@controllerName">
+            @Html.AntiForgeryToken()
+            <input type="hidden" id="editCustomerId" name="Id" />
+            <div class="form-group">
+                <label for="editCustomerName">Full Name</label>
+                <input type="text" id="editCustomerName" name="FullName" required maxlength="100" />
+            </div>
+            <div class="form-group">
+                <label for="editCustomerEmail">Email</label>
+                <input type="email" id="editCustomerEmail" name="Email" maxlength="100" />
+            </div>
+            <div class="form-group">
+                <label for="editCustomerMobile">Phone</label>
+                <input type="text" id="editCustomerMobile" name="Phone" maxlength="20" />
+            </div>
+            <div class="form-group">
+                <label for="editCustomerAddress">Address</label>
+                <input type="text" id="editCustomerAddress" name="Address" maxlength="200" />
+            </div>
+            <div class="form-group">
+                <label for="editCustomerImage">Image URL</label>
+                <input type="text" id="editCustomerImage" name="Image" maxlength="300" />
+            </div>
+            <button type="submit" class="submit-button">Save</button>
+            <button type="button" class="cancel-button" onclick="hideEditCustomerPopup()">Cancel</button>
+        </form>
+    </div>
+</div>
+
+<script>
+function showAddCustomerPopup() {
+    document.getElementById('popup-overlay').style.display = 'block';
+    document.getElementById('add-customer-popup').style.display = 'block';
+}
+function hideAddCustomerPopup() {
+    document.getElementById('popup-overlay').style.display = 'none';
+    document.getElementById('add-customer-popup').style.display = 'none';
+}
+function openEditCustomerPopup(customerId) {
+    document.getElementById('popup-overlay').style.display = 'block';
+    const card = document.querySelector(`.flash-card[data-customer-id='${customerId}']`);
+    if (!card) return;
+    document.getElementById('editCustomerId').value = customerId;
+    document.getElementById('editCustomerName').value = card.querySelector('.customer-details h4').textContent;
+    document.getElementById('editCustomerEmail').value = card.querySelector('.customer-details p:nth-child(2)').textContent.split(': ')[1];
+    document.getElementById('editCustomerMobile').value = card.querySelector('.customer-details p:nth-child(3)').textContent.split(': ')[1];
+    document.getElementById('editCustomerAddress').value = card.querySelector('.customer-details p:nth-child(4)').textContent.split(': ')[1];
+    document.getElementById('editCustomerImage').value = card.querySelector('.icon-container img')?.src || '';
+    document.getElementById('edit-customer-popup').style.display = 'block';
+}
+function hideEditCustomerPopup() {
+    document.getElementById('popup-overlay').style.display = 'none';
+    document.getElementById('edit-customer-popup').style.display = 'none';
+}
+function searchCustomers() {
+    var input = document.getElementById('customerSearch').value.toLowerCase();
+    var cards = document.querySelectorAll('#customerContainer .flash-card');
+    cards.forEach(function(card) {
+        var name = card.querySelector('.customer-details h4').textContent.toLowerCase();
+        card.style.display = name.includes(input) ? '' : 'none';
+    });
+}
+// --- Tab stay logic using ViewData ---
+(function() {
+   console.log("Tab stay logic initialized.");
+})();
+</script>

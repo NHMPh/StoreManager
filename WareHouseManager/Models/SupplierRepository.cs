@@ -3,19 +3,19 @@ using System.Net.Http.Headers;
 using System.Text.Json;
 using System.Text;
 using System.Threading.Tasks;
-using MySql.Data.MySqlClient;
+using System.Collections.Generic;
 using System;
 using WareHouseManager.Models;
 using Microsoft.AspNetCore.Http;
 
 namespace WareHouseManager.Repositories
 {
-    public class ProductRepository
+    public class SupplierRepository
     {
-        private readonly string _apiUrl = "https://modest-gould.103-28-36-75.plesk.page/api/Product";
+        private readonly string _apiUrl = "https://modest-gould.103-28-36-75.plesk.page/api/Suppliers";
         private readonly IHttpContextAccessor _httpContextAccessor;
 
-        public ProductRepository(IHttpContextAccessor httpContextAccessor)
+        public SupplierRepository(IHttpContextAccessor httpContextAccessor)
         {
             _httpContextAccessor = httpContextAccessor;
         }
@@ -25,9 +25,9 @@ namespace WareHouseManager.Repositories
             return _httpContextAccessor.HttpContext?.Session.GetString("AuthToken");
         }
 
-        public async Task<List<Product>> GetProductsAsync()
+        public async Task<List<Supplier>> GetSuppliersAsync()
         {
-            var products = new List<Product>();
+            var suppliers = new List<Supplier>();
             var token = GetToken();
             using (var client = new HttpClient())
             {
@@ -37,58 +37,52 @@ namespace WareHouseManager.Repositories
                 if (response.IsSuccessStatusCode)
                 {
                     var json = await response.Content.ReadAsStringAsync();
-                  
-                    var result = JsonSerializer.Deserialize<List<Product>>(json, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+                    Console.WriteLine($"Response JSON: {json}");
+                    var result = JsonSerializer.Deserialize<List<Supplier>>(json, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
                     if (result != null)
-                        products = result;
+                        suppliers = result;
                 }
             }
-            
-            return products;
+            return suppliers;
         }
 
-        public async Task<bool> AddProductAsync(Product product)
+        public async Task<bool> AddSupplierAsync(Supplier supplier)
         {
             var token = GetToken();
             using (var client = new HttpClient())
             {
                 if (!string.IsNullOrEmpty(token))
                     client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
-                var json = JsonSerializer.Serialize(product);
-                Console.WriteLine($"Adding product: {json}");
+                var json = JsonSerializer.Serialize(supplier);
                 var content = new StringContent(json, Encoding.UTF8, "application/json");
-                Console.WriteLine($"Content: {content}");
                 var response = await client.PostAsync(_apiUrl, content);
-                 Console.WriteLine(response.StatusCode);
                 return response.IsSuccessStatusCode;
             }
         }
 
-        public async Task<bool> UpdateProductAsync(Product product)
+        public async Task<bool> UpdateSupplierAsync(Supplier supplier)
         {
             var token = GetToken();
             using (var client = new HttpClient())
             {
                 if (!string.IsNullOrEmpty(token))
                     client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
-                var json = JsonSerializer.Serialize(product);
+                var json = JsonSerializer.Serialize(supplier);
                 var content = new StringContent(json, Encoding.UTF8, "application/json");
-                Console.WriteLine($"Updating product: {json}");
-                var response = await client.PutAsync($"{_apiUrl}/{product.ProductId}", content);
-                Console.WriteLine($"Update response status: {response.StatusCode}");
+               
+                var response = await client.PutAsync($"{_apiUrl}/{supplier.Id}", content);
                 return response.IsSuccessStatusCode;
             }
         }
 
-        public async Task<bool> DeleteProductAsync(int productId)
+        public async Task<bool> DeleteSupplierAsync(int supplierId)
         {
             var token = GetToken();
             using (var client = new HttpClient())
             {
                 if (!string.IsNullOrEmpty(token))
                     client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
-                var response = await client.DeleteAsync($"{_apiUrl}/{productId}");
-                Console.WriteLine($"Delete response status: {response.StatusCode}");
+                var response = await client.DeleteAsync($"{_apiUrl}/{supplierId}");
                 return response.IsSuccessStatusCode;
             }
         }
