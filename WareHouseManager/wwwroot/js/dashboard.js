@@ -291,20 +291,20 @@ function updateRemainingBalanceOut() {
     document.getElementById('remainingBalanceOut').textContent = remainingBalance.toFixed(2);
 }
 
-function processPaymentOut() {
-    const remainingBalance = parseFloat(document.getElementById('remainingBalanceOut').textContent) || 0;
+// function processPaymentOut() {
+//     const remainingBalance = parseFloat(document.getElementById('remainingBalanceOut').textContent) || 0;
 
-    if (remainingBalance > 0) {
-        alert('Please pay the full amount.');
-        return;
-    }
+//     if (remainingBalance > 0) {
+//         alert('Please pay the full amount.');
+//         return;
+//     }
 
-    alert('Payment successful!');
-    document.getElementById('pendingOrdersTableOut').innerHTML = '';
-    document.getElementById('totalPayableOut').value = '$0.00';
-    document.getElementById('amountPaidOut').value = '';
-    document.getElementById('remainingBalanceOut').textContent = '0.00';
-}
+//     alert('Payment successful!');
+//     document.getElementById('pendingOrdersTableOut').innerHTML = '';
+//     document.getElementById('totalPayableOut').value = '$0.00';
+//     document.getElementById('amountPaidOut').value = '';
+//     document.getElementById('remainingBalanceOut').textContent = '0.00';
+// }
 
 function createPopupOverlay() {
     let overlay = document.getElementsByClassName('popup-overlay');

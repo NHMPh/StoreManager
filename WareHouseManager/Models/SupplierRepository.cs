@@ -37,7 +37,6 @@ namespace WareHouseManager.Repositories
                 if (response.IsSuccessStatusCode)
                 {
                     var json = await response.Content.ReadAsStringAsync();
-                    Console.WriteLine($"Response JSON: {json}");
                     var result = JsonSerializer.Deserialize<List<Supplier>>(json, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
                     if (result != null)
                         suppliers = result;

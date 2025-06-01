@@ -2,20 +2,22 @@ using System;
 using System.Collections.Generic;
 using System.Net.Http;
 using System.Net.Http.Headers;
-using System.Text.Json;
+using System.Net.Http.Json;
 using System.Text;
+using System.Text.Json;
 using System.Threading.Tasks;
-using WareHouseManager.Models;
 using Microsoft.AspNetCore.Http;
+using WareHouseManager.Models;
 
 namespace WareHouseManager.Repositories
 {
-    public class TransactionInRepository
+    public class TransactionOutRepository
     {
-        private readonly string _apiUrl = "https://modest-gould.103-28-36-75.plesk.page/api/TransactionIn";
+        // Remove _httpClient field, use local HttpClient in methods
+        private readonly string _apiBaseUrl = "https://modest-gould.103-28-36-75.plesk.page/api/TransactionOut";
         private readonly IHttpContextAccessor _httpContextAccessor;
 
-        public TransactionInRepository(IHttpContextAccessor httpContextAccessor)
+        public TransactionOutRepository(IHttpContextAccessor httpContextAccessor)
         {
             _httpContextAccessor = httpContextAccessor;
         }
@@ -25,19 +27,19 @@ namespace WareHouseManager.Repositories
             return _httpContextAccessor.HttpContext?.Session.GetString("AuthToken");
         }
 
-        public async Task<List<TransactionIn>> GetTransactionInsAsync()
+        public async Task<List<TransactionOut>> GetTransactionOutsAsync()
         {
-            var transactions = new List<TransactionIn>();
+            var transactions = new List<TransactionOut>();
             var token = GetToken();
             using (var client = new HttpClient())
             {
                 if (!string.IsNullOrEmpty(token))
                     client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
-                var response = await client.GetAsync(_apiUrl);
+                var response = await client.GetAsync(_apiBaseUrl);
                 if (response.IsSuccessStatusCode)
                 {
                     var json = await response.Content.ReadAsStringAsync();
-                    var result = JsonSerializer.Deserialize<List<TransactionIn>>(json, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+                    var result = JsonSerializer.Deserialize<List<TransactionOut>>(json, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
                     if (result != null)
                         transactions = result;
                 }
@@ -45,26 +47,21 @@ namespace WareHouseManager.Repositories
             return transactions;
         }
 
-        public async Task<bool> AddTransactionInAsync(TransactionIn transaction)
+        public async Task<bool> AddTransactionOutAsync(TransactionOut transactionOut)
         {
-            Console.WriteLine("Adding TransactionIn");
-            Console.WriteLine($"TransactionIn: {transaction.Id}, {transaction.Supplier}, {transaction.SupplierId}, {transaction.Details}, {transaction.TransactionDate}");
-            foreach (var detail in transaction.Details)
-            {
-                Console.WriteLine($"Detail: {detail.Id}, {detail.ProductId}, {detail.Quantity}, {detail.UnitPrice}");
-            }
-            Console.WriteLine($"TransactionIn JSON: {JsonSerializer.Serialize(transaction)}");
+
 
             var token = GetToken();
             using (var client = new HttpClient())
             {
                 if (!string.IsNullOrEmpty(token))
                     client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
-                var json = JsonSerializer.Serialize(transaction);
+                var json = JsonSerializer.Serialize(transactionOut);
                 var content = new StringContent(json, Encoding.UTF8, "application/json");
-                Console.WriteLine($"Adding transaction: {json}");
+                Console.WriteLine($"Adding TransactionOut: {json}");
                 Console.WriteLine($"Content: {content}");
-                var response = await client.PostAsync(_apiUrl, content);
+
+                var response = await client.PostAsync(_apiBaseUrl, content);
                 return response.IsSuccessStatusCode;
             }
         }

@@ -159,8 +159,10 @@ function processPayment() {
         supplier: supplierObj,
         details: details
     };
+    
     document.getElementById('transactionInJson').value = JSON.stringify(transactionIn);
     console.log('Transaction In JSON:', document.getElementById('transactionInJson').value);
+
     document.getElementById('addTransactionInForm').submit();
 } 
     

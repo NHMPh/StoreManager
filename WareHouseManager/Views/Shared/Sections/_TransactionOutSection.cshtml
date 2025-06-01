@@ -1,11 +1,209 @@
 @* Transaction Out Section *@
-<div id="transaction-out-tab" class="tab-content" style="display: none;">
-    <div class="title-bar">
+@{
+    var customers = ViewData["AllCustomers"] as List<WareHouseManager.Models.Customer>;
+    var products = ViewData["AllProducts"] as List<WareHouseManager.Models.Product>;
+    var controllerName = "Admin";
+    var addAction = "CreateTransactionOut";
+    var activeTab = ViewData["ActiveTab"] as string ?? "product-tab";
+    var displayStyle = activeTab == "transaction-out-tab" ? "block" : "none";
+}
+<div id="transaction-out-tab" class="tab-content" style="display: @displayStyle;">
+    <div class="title-bar"
+        style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px;">
+        <h3 style="margin: 0;">Transaction Out</h3>
+        <button type="button" class="btn btn-success" style="height: 38px;" onclick="showAddTransactionOutPopup()">
+            <i class="fas fa-plus"></i> Add Transaction Out
+        </button>
     </div>
     <div class="transaction-panel">
+        <div class="form-group">
+            <label for="customerSelect">Select Customer</label>
+            <select id="customerSelect" class="form-control">
+                <option value="">-- Select Customer --</option>
+                @if (customers != null)
+                {
+                    foreach (var customer in customers)
+                    {
+                        <option value="@customer.FullName" data-customer-id="@customer.Id">@customer.FullName</option>
+                    }
+                }
+            </select>
+        </div>
+        <div class="form-group">
+            <label for="productSelectOut">Select Product</label>
+            <select id="productSelectOut" class="form-control" onchange="updateProductInfoOut()">
+                <option value="">-- Select Product --</option>
+                @if (products != null)
+                {
+                    foreach (var product in products)
+                    {
+                        <option value="@product.ProductName" data-product-id="@product.ProductId" data-stock="@product.Stock"
+                            data-price="@product.CostPerUnit">
+                            @product.ProductName</option>
+                    }
+                }
+            </select>
+        </div>
+        <div class="product-info">
+            <p>Stock: <span id="productStockOut">N/A</span></p>
+            <p>Price per Unit: $<span id="productPriceOut">N/A</span></p>
+        </div>
+        <div class="form-group">
+            <label for="productQuantityOut">Quantity</label>
+            <input type="number" id="productQuantityOut" class="form-control" min="1"
+                onchange="updateTotalAmountOut()" />
+        </div>
+        <div class="form-group">
+            <label for="totalAmountOut">Total Amount</label>
+            <input type="text" id="totalAmountOut" class="form-control" readonly />
+        </div>
+        <button class="add-button" onclick="addPendingOrderOut()">Add to Pending Orders</button>
     </div>
     <div class="pending-orders">
+        <h4>Pending Orders</h4>
+        <table class="styled-table">
+            <thead>
+                <tr>
+                    <th>Customer</th>
+                    <th>Product</th>
+                    <th>Quantity</th>
+                    <th>Total</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody id="pendingOrdersTableOut">
+                <!-- Dynamically populated rows -->
+            </tbody>
+        </table>
     </div>
     <div class="payment-panel">
+        <h4>Payment</h4>
+        <div class="form-group">
+            <label for="totalPayableOut">Total Payable</label>
+            <input type="text" id="totalPayableOut" class="form-control" readonly />
+        </div>
+        <div class="form-group">
+            <label for="amountPaidOut">Amount Paid</label>
+            <input type="number" id="amountPaidOut" class="form-control" min="0"
+                onchange="updateRemainingBalanceOut()" />
+        </div>
+        <div class="form-group">
+            <p>Remaining Balance: $<span id="remainingBalanceOut">0.00</span></p>
+        </div>
+        <button class="submit-button" type="button" onclick="processPaymentOut()">Pay</button>
     </div>
 </div>
+
+<!-- Hidden form for submitting TransactionOut -->
+<form id="addTransactionOutForm" asp-antiforgery="true" method="post" asp-action="@addAction"
+    asp-controller="@controllerName" style="display:none;">
+    <input type="hidden" name="transactionOutJson" id="transactionOutJson" />
+</form>
+
+<script>
+    function getProductByNameOut(name) {
+        if (!window.productsList) return null;
+        return window.productsList.find(p => p.productName === name);
+    }
+    function processPaymentOut() {
+        const customerSelect = document.getElementById('customerSelect');
+        const customerId = customerSelect.selectedIndex > 0 ? customerSelect.options[customerSelect.selectedIndex].getAttribute('data-customer-id') : null;
+        if (!customerId) {
+            alert('Please select a customer.');
+            return;
+        }
+        const table = document.getElementById('pendingOrdersTableOut');
+        const details = [];
+        for (const row of table.rows) {
+            // Get productName from the cell, then lookup productId from productsList
+            const productName = row.cells[1] ? row.cells[1].textContent : null;
+            let productId = null;
+            if (productName && window.productsList) {
+                const productObj = window.productsList.find(p => p.productName === productName);
+                if (productObj) productId = productObj.productId || productObj.id;
+            }
+            // row.cells[2] is quantity, row.cells[3] is total (e.g. $100.00)
+            const quantity = row.cells.length > 2 && row.cells[2] ? parseInt(row.cells[2].textContent) : 0;
+            let unitPrice = 0;
+            if (!isNaN(quantity) && quantity > 0 && row.cells.length > 3 && row.cells[3]) {
+                const total = parseFloat(row.cells[3].textContent.replace('$',''));
+                unitPrice = !isNaN(total) ? total / quantity : 0;
+            }
+            details.push({ productId, quantity, unitPrice });
+        }
+        if (details.length === 0) {
+            alert('Please add at least one product.');
+            return;
+        }
+        const transactionOut = {
+            customerId: parseInt(customerId),
+            transactionDate: new Date().toISOString(),
+            details: details
+        };
+        console.log('Transaction Out:', transactionOut);
+        document.getElementById('transactionOutJson').value = JSON.stringify(transactionOut);
+        document.getElementById('addTransactionOutForm').submit();
+    }
+    function addPendingOrderOut() {
+        const customerSelect = document.getElementById('customerSelect');
+        const customerId = customerSelect.selectedIndex > 0 ? customerSelect.options[customerSelect.selectedIndex].getAttribute('data-customer-id') : null;
+        const productSelect = document.getElementById('productSelectOut');
+        // Get productId from selected option's data-product-id attribute
+        const selectedProductOption = productSelect.options[productSelect.selectedIndex];
+        const productId = selectedProductOption.getAttribute('data-product-id');
+        const productName = productSelect.value;
+        const quantity = parseInt(document.getElementById('productQuantityOut').value);
+        const unitPrice = parseFloat(document.getElementById('productPriceOut').textContent);
+        if (!customerId || !productId || !quantity || isNaN(unitPrice)) {
+            alert('Please select customer, product, and enter quantity.');
+            return;
+        }
+        const table = document.getElementById('pendingOrdersTableOut');
+        const row = table.insertRow();
+        row.insertCell(0).textContent = customerId;
+        // Store productId in a hidden cell for reliable retrieval
+        const productCell = row.insertCell(1);
+        productCell.textContent = productName;
+        const hiddenProductIdCell = row.insertCell(2);
+        hiddenProductIdCell.style.display = 'none';
+        hiddenProductIdCell.textContent = productId;
+        row.insertCell(3).textContent = quantity;
+        row.insertCell(4).textContent = `$${(unitPrice * quantity).toFixed(2)}`;
+        const actionsCell = row.insertCell(5);
+        const removeBtn = document.createElement('button');
+        removeBtn.textContent = 'Remove';
+        removeBtn.className = 'btn btn-danger btn-sm';
+        removeBtn.onclick = function () { table.deleteRow(row.rowIndex - 0); };
+        actionsCell.appendChild(removeBtn);
+        updateTotalPayableOut();
+    }
+    function updateProductInfoOut() {
+        const productName = document.getElementById('productSelectOut').value;
+        const product = getProductByNameOut(productName);
+        document.getElementById('productStockOut').textContent = product ? product.stock : 'N/A';
+        document.getElementById('productPriceOut').textContent = product ? product.costPerUnit : 'N/A';
+        updateTotalAmountOut();
+    }
+    function updateTotalAmountOut() {
+        const quantity = parseInt(document.getElementById('productQuantityOut').value);
+        const price = parseFloat(document.getElementById('productPriceOut').textContent);
+        document.getElementById('totalAmountOut').value = (!isNaN(quantity) && !isNaN(price)) ? (quantity * price).toFixed(2) : '';
+    }
+    function updateTotalPayableOut() {
+        const table = document.getElementById('pendingOrdersTableOut');
+        let total = 0;
+        for (const row of table.rows) {
+            total += parseFloat(row.cells[4].textContent.replace('$', ''));
+        }
+        document.getElementById('totalPayableOut').value = total.toFixed(2);
+    }
+    function updateRemainingBalanceOut() {
+        const total = parseFloat(document.getElementById('totalPayableOut').value) || 0;
+        const paid = parseFloat(document.getElementById('amountPaidOut').value) || 0;
+        document.getElementById('remainingBalanceOut').textContent = (total - paid).toFixed(2);
+    }
+    function showAddTransactionOutPopup() {
+        document.getElementById('popup-overlay').style.display = 'block';
+        // You can add a popup for transaction out if needed
+    }
+</script>

@@ -21,8 +21,9 @@ namespace WareHouseManager.Controllers
         private readonly IHttpContextAccessor _httpContextAccessor;
         // TransactionIn Section
         private readonly TransactionInRepository _transactionInRepository;
+        private readonly TransactionOutRepository _transactionOutRepository;
 
-        public AdminController(ProductRepository productRepository, SupplierRepository supplierRepository, CustomerRepository customerRepository, WarehouseManagerRepository warehouseManagerRepository, SalesManagerRepository salesManagerRepository, IHttpContextAccessor httpContextAccessor, TransactionInRepository transactionInRepository)
+        public AdminController(ProductRepository productRepository, SupplierRepository supplierRepository, CustomerRepository customerRepository, WarehouseManagerRepository warehouseManagerRepository, SalesManagerRepository salesManagerRepository, IHttpContextAccessor httpContextAccessor, TransactionInRepository transactionInRepository, TransactionOutRepository transactionOutRepository)
         {
             _productRepository = productRepository;
             _supplierRepository = supplierRepository;
@@ -31,6 +32,7 @@ namespace WareHouseManager.Controllers
             _salesManagerRepository = salesManagerRepository;
             _httpContextAccessor = httpContextAccessor;
             _transactionInRepository = transactionInRepository;
+            _transactionOutRepository = transactionOutRepository;
         }
 
         public async Task<IActionResult> Dashboard()
@@ -363,18 +365,55 @@ namespace WareHouseManager.Controllers
         // POST: /Admin/CreateTransactionIn
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> CreateTransactionIn(TransactionIn transactionIn)
+        public async Task<IActionResult> CreateTransactionIn([FromForm] string transactionInJson)
         {
-            SetActiveTab("product-tab");
-            ViewData["ActiveTab"] = "product-tab";
-            if (ModelState.IsValid)
+            if (string.IsNullOrWhiteSpace(transactionInJson))
             {
-                var result = await _transactionInRepository.AddTransactionInAsync(transactionIn);
-                if (result)
-                    return RedirectToAction("Dashboard");
-                ModelState.AddModelError("", "Failed to create transaction.");
+                TempData["Error"] = "Invalid transaction data.";
+                return RedirectToAction("Dashboard");
             }
-            // Always redirect to Dashboard, even if model state is invalid
+            var transactionIn = System.Text.Json.JsonSerializer.Deserialize<WareHouseManager.Models.TransactionIn>(transactionInJson, new System.Text.Json.JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+            if (transactionIn == null)
+            {
+                TempData["Error"] = "Failed to parse transaction data.";
+                return RedirectToAction("Dashboard");
+            }
+            var result = await _transactionInRepository.AddTransactionInAsync(transactionIn);
+            if (result)
+                return RedirectToAction("Dashboard");
+            TempData["Error"] = "Failed to create transaction.";
+            return RedirectToAction("Dashboard");
+        }
+
+        // GET: /Admin/TransactionOut
+        public async Task<IActionResult> TransactionOut()
+        {
+            var transactions = await _transactionOutRepository.GetTransactionOutsAsync();
+            return View("TransactionOut/Index", transactions);
+        }
+
+        // POST: /Admin/CreateTransactionOut
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> CreateTransactionOut([FromForm] string transactionOutJson)
+        {
+            if (string.IsNullOrWhiteSpace(transactionOutJson))
+            {
+                TempData["Error"] = "Invalid transaction data.";
+                return RedirectToAction("Dashboard");
+            }
+            var transactionOut = System.Text.Json.JsonSerializer.Deserialize<WareHouseManager.Models.TransactionOut>(transactionOutJson, new System.Text.Json.JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+            Console.WriteLine($"TransactionOut JSON: {transactionOutJson}");
+            Console.WriteLine($"Parsed TransactionOut: {transactionOut?.Id}, {transactionOut?.CustomerId}, {transactionOut?.Details}, {transactionOut?.TransactionDate}");
+            if (transactionOut == null)
+            {
+                TempData["Error"] = "Failed to parse transaction data.";
+                return RedirectToAction("Dashboard");
+            }
+            var result = await _transactionOutRepository.AddTransactionOutAsync(transactionOut);
+            if (result)
+                return RedirectToAction("Dashboard");
+            TempData["Error"] = "Failed to create transaction out.";
             return RedirectToAction("Dashboard");
         }
 

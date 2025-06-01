@@ -27,6 +27,7 @@ namespace WareHouseManager
             builder.Services.AddScoped<WarehouseManagerRepository>();
             builder.Services.AddScoped<SalesManagerRepository>();
             builder.Services.AddScoped<WareHouseManager.Repositories.TransactionInRepository>();
+            builder.Services.AddScoped<WareHouseManager.Repositories.TransactionOutRepository>();
             builder.Services.AddSession(options =>
             {
                 options.IdleTimeout = TimeSpan.FromMinutes(30);
