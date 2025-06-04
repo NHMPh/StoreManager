@@ -55,6 +55,7 @@ namespace WareHouseManager.Repositories
                 if (!string.IsNullOrEmpty(token))
                     client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
                 var json = JsonSerializer.Serialize(product);
+                
                 Console.WriteLine($"Adding product: {json}");
                 var content = new StringContent(json, Encoding.UTF8, "application/json");
                 Console.WriteLine($"Content: {content}");

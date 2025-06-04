@@ -24,9 +24,12 @@
     ViewData["AllProducts"] = Model.Products;
     ViewData["AllSuppliers"] = Model.Suppliers;
     ViewData["AllCustomers"] = Model.Customers;
+    ViewData["WarehouseManagers"] = Model.WarehouseManagers;
+    ViewData["SalesManagers"] = Model.SalesManagers;
     ViewData["ActiveTab"] = "product-tab"; // Default active tab
     ViewData["TransactionInController"] = "Admin";
     ViewData["AddTransactionInAction"] = "CreateTransactionIn";
+
 }
 <link rel="stylesheet" href="/css/admin-dashboard.css" />
 <link rel="stylesheet" href="/css/dashboard-popup.css" />
@@ -50,7 +53,9 @@
     <partial name="~/Views/Shared/Sections/_CustomersSection.cshtml" model="Model.Customers" />
     <partial name="~/Views/Shared/Sections/_TransactionInSection.cshtml" />
     <partial name="~/Views/Shared/Sections/_TransactionOutSection.cshtml" />
+    <partial name="~/Views/Shared/Sections/_ManageOrdersSection.cshtml" />
     <partial name="~/Views/Shared/Sections/_WarehouseManagerSection.cshtml" model="Model.WarehouseManagers" />
     <partial name="~/Views/Shared/Sections/_SalesManagerSection.cshtml" model="Model.SalesManagers" />
+     <partial name="~/Views/Shared/Sections/_SettingsSection.cshtml" />
 </div>
 <script src="/js/dashboard.js?v=@System.IO.File.GetLastWriteTimeUtc(System.IO.Path.Combine(Directory.GetCurrentDirectory(), "wwwroot/js/dashboard.js")).Ticks"></script>

@@ -5,9 +5,19 @@
     ViewData["AddProductAction"] = "AddProduct";
     ViewData["UpdateProductAction"] = "UpdateProduct";
     ViewData["DeleteProductAction"] = "DeleteProduct";
+    ViewData["SupplierController"] = "Warehouse";
+    ViewData["AddSupplierAction"] = "AddSupplier";
+    ViewData["UpdateSupplierAction"] = "UpdateSupplier";
+    ViewData["DeleteSupplierAction"] = "DeleteSupplier";
+    ViewData["TransactionInController"] = "Warehouse";
+    ViewData["AddTransactionInAction"] = "CreateTransactionIn";
+    ViewData["AllProducts"] = Model;
+    ViewData["AllSuppliers"] = ViewData["AllSuppliers"] ?? new List<WareHouseManager.Models.Supplier>();
+    ViewData["AllTransactionIns"] = ViewData["AllTransactionIns"] ?? new List<WareHouseManager.Models.TransactionIn>();
 }
 <link rel="stylesheet" href="/css/admin-dashboard.css" />
 <link rel="stylesheet" href="/css/dashboard-popup.css" />
+<div id="popup-overlay" class="popup-overlay" style="display: none;"></div>
 <div class="sidebar">
     <h2>Warehouse Manager Panel</h2>
     <div class="tab" onclick="showTab('product-tab')">Manage Products</div>
@@ -18,8 +28,8 @@
 </div>
 <div class="content">
     <partial name="~/Views/Shared/Sections/_ProductsSection.cshtml" model="Model" />
-    <partial name="~/Views/Shared/Sections/_SuppliersSection.cshtml" />
+    <partial name="~/Views/Shared/Sections/_SuppliersSection.cshtml" model="@(ViewData["AllSuppliers"] as List<WareHouseManager.Models.Supplier>)" />
     <partial name="~/Views/Shared/Sections/_TransactionInSection.cshtml" />
     <partial name="~/Views/Shared/Sections/_SettingsSection.cshtml" />
 </div>
-<script src="/js/dashboard.js"></script>
+<script src="/js/dashboard.js?v=@System.IO.File.GetLastWriteTimeUtc(System.IO.Path.Combine(Directory.GetCurrentDirectory(), "wwwroot/js/dashboard.js")).Ticks"></script>

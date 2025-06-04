@@ -51,7 +51,12 @@ namespace WareHouseManager.Controllers
             var customers = await _customerRepository.GetCustomersAsync() ?? new List<Customer>();
             var warehouseManagers = await _warehouseManagerRepository.GetWarehouseManagersAsync() ?? new List<WarehouseManager>();
             var salesManagers = await _salesManagerRepository.GetSalesManagersAsync() ?? new List<SalesManager>();
+            var transactionsIn = await _transactionInRepository.GetTransactionInsAsync() ?? new List<TransactionIn>();
+            ViewData["AllTransactionsIn"] = transactionsIn;
 
+            // Get TransactionOut responses from repository (assume you have a method for this)
+            var transactionsOut = await _transactionOutRepository.GetTransactionOutResponsesAsync() ?? new List<TransactionOutResponse>();
+            ViewData["AllTransactionsOut"] = transactionsOut;
 
             var model = new AdminDashboardViewModel
             {
@@ -103,6 +108,14 @@ namespace WareHouseManager.Controllers
                 await _productRepository.UpdateProductAsync(product);
                 SetActiveTab("product-tab");
                 return RedirectToAction("Dashboard");
+            }
+            else
+            {
+                Console.WriteLine("ModelState is invalid for product update.");
+                foreach (var error in ModelState.Values.SelectMany(v => v.Errors))
+                {
+                    Console.WriteLine($"Error: {error.ErrorMessage}");
+                }
             }
             SetActiveTab("product-tab");
             var model = new AdminDashboardViewModel
@@ -161,6 +174,13 @@ namespace WareHouseManager.Controllers
                 await _supplierRepository.UpdateSupplierAsync(supplier);
                 SetActiveTab("supplier-tab");
                 return RedirectToAction("Dashboard");
+            }else
+            {
+                Console.WriteLine("ModelState is invalid for supplier update.");
+                foreach (var error in ModelState.Values.SelectMany(v => v.Errors))
+                {
+                    Console.WriteLine($"Error: {error.ErrorMessage}");
+                }
             }
             SetActiveTab("supplier-tab");
             var model = new AdminDashboardViewModel
@@ -217,6 +237,13 @@ namespace WareHouseManager.Controllers
                 await _customerRepository.UpdateCustomerAsync(customer);
                 SetActiveTab("customer-tab");
                 return RedirectToAction("Dashboard");
+            }else
+            {
+                Console.WriteLine("ModelState is invalid for customer update.");
+                foreach (var error in ModelState.Values.SelectMany(v => v.Errors))
+                {
+                    Console.WriteLine($"Error: {error.ErrorMessage}");
+                }
             }
             SetActiveTab("customer-tab");
             var model = new AdminDashboardViewModel

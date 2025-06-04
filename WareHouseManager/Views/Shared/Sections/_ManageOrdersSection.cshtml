@@ -1,5 +1,123 @@
 @* Manage Orders Section *@
 <div id="orders-tab" class="tab-content" style="display: none;">
-   <div class="title-bar">
+    <div class="title-bar">
+        <h3>Manage Orders</h3>
     </div>
+    <div class="search-bar">
+        <input type="text" id="transactionSearch" placeholder="Search transactions by ID..." onkeyup="searchTransactions()" />
+        <button class="filter-button" onclick="searchTransactions()">Search</button>
+    </div>
+    <div class="transaction-section">
+        <div style="display: flex; gap: 10px; margin-bottom: 10px;">
+            <button class="filter-button" id="showTransactionInBtn" onclick="showTransactionTable('in')">Show Transaction In</button>
+            <button class="filter-button" id="showTransactionOutBtn" onclick="showTransactionTable('out')">Show Transaction Out</button>
+        </div>
+        <div id="transactionInSection">
+            <h4>Transaction In</h4>
+            <table class="styled-table">
+                <thead>
+                    <tr>
+                        <th>Transaction ID</th>
+                        <th>Supplier</th>
+                        <th>Product</th>
+                        <th>Quantity</th>
+                        <th>Total</th>
+                        <th>Date</th>
+                    </tr>
+                </thead>
+                <tbody id="transactionInTable">
+                    @if (ViewData["AllTransactionsIn"] is List<WareHouseManager.Models.TransactionIn> transactionIns)
+                    {
+                        foreach (var tran in transactionIns)
+                        {
+                            if (tran.Details != null && tran.Details.Count > 0)
+                            {
+                                foreach (var detail in tran.Details)
+                                {
+                                    <tr>
+                                        <td>@tran.Id</td>
+                                        <td>@(tran.Supplier != null ? tran.Supplier.Name : "")</td>
+                                        <td>@(detail.Product != null ? detail.Product.ProductName : "")</td>
+                                        <td>@detail.Quantity</td>
+                                        <td>$@(detail.UnitPrice * detail.Quantity)</td>
+                                        <td>@tran.TransactionDate.ToString("yyyy-MM-dd")</td>
+                                    </tr>
+                                }
+                            }
+                            else
+                            {
+                                <tr>
+                                    <td>@tran.Id</td>
+                                    <td>@(tran.Supplier != null ? tran.Supplier.Name : "")</td>
+                                    <td></td>
+                                    <td></td>
+                                    <td></td>
+                                    <td>@tran.TransactionDate.ToString("yyyy-MM-dd")</td>
+                                </tr>
+                            }
+                        }
+                    }
+                </tbody>
+            </table>
+        </div>
+        <div id="transactionOutSection" style="display:none;">
+            <h4>Transaction Out</h4>
+            <table class="styled-table">
+                <thead>
+                    <tr>
+                        <th>Transaction ID</th>
+                        <th>Customer</th>
+                        <th>Product</th>
+                        <th>Quantity</th>
+                        <th>Total</th>
+                        <th>Date</th>
+                    </tr>
+                </thead>
+                <tbody id="transactionOutTable">
+                    @if (ViewData["AllTransactionsOut"] is List<WareHouseManager.Models.TransactionOutResponse> transactionOuts)
+                    {
+                        foreach (var tran in transactionOuts)
+                        {
+                            if (tran.Details != null && tran.Details.Count > 0)
+                            {
+                                foreach (var detail in tran.Details)
+                                {
+<tr>
+    <td>@tran.Id</td>
+    <td>@tran.CustomerName</td>
+    <td>@detail.ProductName</td>
+    <td>@detail.Quantity</td>
+    <td>$@(detail.UnitPrice * detail.Quantity)</td>
+    <td>@tran.TransactionDate.ToString("yyyy-MM-dd")</td>
+</tr>
+                                }
+                            }
+                            else
+                            {
+<tr>
+    <td>@tran.Id</td>
+    <td>@tran.CustomerName</td>
+    <td></td>
+    <td></td>
+    <td></td>
+    <td>@tran.TransactionDate.ToString("yyyy-MM-dd")</td>
+</tr>
+                            }
+                        }
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+<script>
+function showTransactionTable(type) {
+    document.getElementById('transactionInSection').style.display = (type === 'in') ? '' : 'none';
+    document.getElementById('transactionOutSection').style.display = (type === 'out') ? '' : 'none';
+    document.getElementById('showTransactionInBtn').classList.toggle('active', type === 'in');
+    document.getElementById('showTransactionOutBtn').classList.toggle('active', type === 'out');
+}
+// Optionally, show Transaction In by default
+showTransactionTable('in');
+</script>
 </div>
+

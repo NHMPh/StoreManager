@@ -28,6 +28,9 @@ namespace WareHouseManager.Models
         [JsonPropertyName("imageData")]
         public string? ImageData { get; set; } // base64 image data from API
 
+        [JsonPropertyName("imageBase64")]
+        public string? ImageBase64 { get; set; } // base64 image data from local storage
+
         [JsonPropertyName("productCode")]
         public string? ProductCode { get; set; }
 

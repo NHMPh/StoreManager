@@ -12,9 +12,12 @@
 <div id="product-tab" class="tab-content" style="display: @displayStyle;">
     <div class="title-bar" style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px;">
         <h3 style="margin: 0;">Products</h3>
-        <button type="button" class="btn btn-success" style="height: 38px;" onclick="showAddProductPopup()">
-            <i class="fas fa-plus"></i> Add Product
-        </button>
+        @if (controllerName == "Admin")
+        {
+            <button type="button" class="btn btn-success" style="height: 38px;" onclick="showAddProductPopup()">
+                <i class="fas fa-plus"></i> Add Product
+            </button>
+        }
     </div>
     <div class="search-bar" style="display: flex; align-items: center; gap: 10px; margin-bottom: 16px;">
         <input type="text" id="productSearch" placeholder="Search products by name..." onkeyup="searchProducts()" class="form-control" style="width: 300px;" />
@@ -41,17 +44,30 @@
                         <p>Unit: @product.Unit</p>
                         <p>Cost Per Unit: $@product.CostPerUnit</p>
                         <p>Stock: @product.Stock</p>
+                        <input type="hidden" data-field="SalePrice" value="@product.SalePrice" />
+                        <input type="hidden" data-field="SupplierId" value="@product.SupplierId" />
+                        <input type="hidden" data-field="ProductId" value="@product.ProductId" />
+                        <input type="hidden" data-field="ImageData" value="@product.ImageData" />
+                        <input type="hidden" data-field="ProductCode" value="@product.ProductCode" />
+                        <input type="hidden" data-field="Category" value="@product.Category" />
+                        <input type="hidden" data-field="Promotion" value="@product.Promotion" />
                     </div>
                     <div class="product-actions">
-                        <button class="edit-button" type="button" onclick="openEditProductPopup(@product.ProductId)">
-                            <i class="fas fa-edit"></i> Edit
-                        </button>
-                        <form method="post" asp-action="@deleteAction" asp-controller="@controllerName" style="display:inline;" onsubmit="return confirm('Are you sure you want to delete this product?');">
-                            <input type="hidden" name="id" value="@product.ProductId" />
-                            <button type="submit" class="delete-button">
-                                <i class="fas fa-trash"></i> Delete
+                        @if (controllerName == "Admin")
+                        {
+                            <button class="edit-button" type="button" onclick="openEditProductPopup(@product.ProductId)">
+                                <i class="fas fa-edit"></i> Edit
                             </button>
-                        </form>
+                            <form method="post" asp-action="@deleteAction" asp-controller="@controllerName" style="display:inline;" onsubmit="return confirm('Are you sure you want to delete this product?');">
+                                <input type="hidden" name="id" value="@product.ProductId" />
+                                <button type="submit" class="delete-button">
+                                    <i class="fas fa-trash"></i> Delete
+                                </button>
+                            </form>
+                        }
+                        <button class="detail-button" type="button" onclick="showProductDetail(@product.ProductId)">
+                            <i class="fas fa-edit"></i> Detail
+                        </button>
                     </div>
                 </div>
             }
@@ -66,7 +82,7 @@
 <div id="add-product-popup" class="popup" style="display: none;">
     <div class="popup-content">
         <h3>Add Product</h3>
-        <form asp-antiforgery="true" method="post" enctype="multipart/form-data" asp-action="@addAction" asp-controller="@controllerName" onsubmit="return ensureImageDataBeforeSubmit('')">
+        <form asp-antiforgery="true" method="post" enctype="multipart/form-data" asp-action="@addAction" asp-controller="@controllerName">
             @Html.AntiForgeryToken()
             <div class="form-group">
                 <label for="productName">Product Name</label>
@@ -101,13 +117,22 @@
                 <input type="text" id="promotion" name="Promotion" maxlength="100" />
             </div>
             <div class="form-group">
-                <label for="supplierId">Supplier ID</label>
-                <input type="number" id="supplierId" name="SupplierId" min="0" />
+                <label for="supplierId">Supplier</label>
+                <select id="supplierId" name="SupplierId" class="form-control">
+                    <option value="">Select supplier...</option>
+                    @if (ViewData["AllSuppliers"] is List<WareHouseManager.Models.Supplier> supplierList)
+                    {
+                        foreach (var s in supplierList)
+                        {
+                            <option value="@s.Id">@s.Name</option>
+                        }
+                    }
+                </select>
             </div>
             <div class="form-group">
                 <label for="imageData">Image</label>
                 <input type="file" id="imageDataFile" name="ImageFile" accept="image/*" onchange="convertImageToBase64(event, '')" />
-                <input type="hidden" id="imageData" name="ImageData" />
+                <input type="hidden" id="imageData" name="ImageBase64" />
             </div>
             <button type="submit" class="submit-button">Submit</button>
             <button type="button" class="cancel-button" onclick="hideAddProductPopup()">Cancel</button>
@@ -154,17 +179,35 @@
                 <input type="text" id="editPromotion" name="Promotion" maxlength="100" />
             </div>
             <div class="form-group">
-                <label for="editSupplierId">Supplier ID</label>
-                <input type="number" id="editSupplierId" name="SupplierId" min="0" />
+                <label for="editSupplierId">Supplier</label>
+                <select id="editSupplierId" name="SupplierId" class="form-control">
+                    <option value="">Select supplier...</option>
+                    @if (ViewData["AllSuppliers"] is List<WareHouseManager.Models.Supplier> suppliers)
+                    {
+                        foreach (var supplier in suppliers)
+                        {
+                            <option value="@supplier.Id">@supplier.Name</option>
+                        }
+                    }
+                </select>
             </div>
             <div class="form-group">
                 <label for="editImageData">Image</label>
                 <input type="file" id="editImageDataFile" name="ImageFile" accept="image/*" onchange="convertImageToBase64(event, 'edit')" />
-                <input type="hidden" id="editImageData" name="ImageData" />
+                <input type="hidden" id="editImageData" name="ImageBase64" />
             </div>
             <button type="submit" class="submit-button">Save</button>
             <button type="button" class="cancel-button" onclick="hideEditProductPopup()">Cancel</button>
         </form>
+    </div>
+</div>
+
+<!-- Product Detail Modal -->
+<div id="product-detail-modal" class="popup" style="display:none;">
+    <div class="popup-content" id="product-detail-content">
+        <h3>Product Details</h3>
+        <div id="product-detail-body"></div>
+        <button type="button" class="cancel-button" onclick="hideProductDetail()">Close</button>
     </div>
 </div>
 
@@ -175,40 +218,70 @@ function convertImageToBase64(event, prefix = '') {
     const reader = new FileReader();
     reader.onload = function(e) {
         const base64 = e.target.result.split(',')[1];
-        document.getElementById(prefix + 'ImageData').value = base64;
-        document.getElementById('imageData').value = base64; // Hide the file input after conversion
+        // Set the correct hidden input(s) for the form
+        const imageDataInput = document.getElementById(prefix + 'imageData');
+        if (imageDataInput) imageDataInput.value = base64;
+        const imageDataGlobal = document.getElementById('imageData');
+        if (imageDataGlobal) imageDataGlobal.value = base64;
+
+       
     };
     reader.readAsDataURL(file);
 }
-function ensureImageDataBeforeSubmit(prefix = '') {
-    var base64 = document.getElementById(prefix + 'ImageData').value;
-    document.getElementById('imageData').value = base64;
-    if (!base64) {
-       
-    }
-    return true;
-}
+
 function openEditProductPopup(productId) {
     // Find the product card
-     document.getElementById('popup-overlay').style.display = 'block';
+    document.getElementById('popup-overlay').style.display = 'block';
     const card = document.querySelector(`.flash-card[data-product-id='${productId}']`);
     if (!card) return;
     document.getElementById('editProductId').value = productId;
     document.getElementById('editProductName').value = card.querySelector('.product-details h4').textContent;
-    document.getElementById('editProductCode').value = card.querySelector('.product-details [data-field="ProductCode"]')?.textContent || '';
-    document.getElementById('editCategory').value = card.querySelector('.product-details [data-field="Category"]')?.textContent || '';
+    document.getElementById('editProductCode').value = card.querySelector('.product-details [data-field="ProductCode"]')?.value || '';
+    document.getElementById('editCategory').value = card.querySelector('.product-details [data-field="Category"]')?.value || '';
     document.getElementById('editUnit').value = card.querySelector('.product-details p:nth-child(2)').textContent.split(': ')[1];
     document.getElementById('editQuantity').value = card.querySelector('.product-details p:nth-child(4)').textContent.split(': ')[1];
     document.getElementById('editImportPrice').value = card.querySelector('.product-details p:nth-child(3)').textContent.split(': $')[1];
-    document.getElementById('editSalePrice').value = '';
-    document.getElementById('editPromotion').value = '';
-    document.getElementById('editSupplierId').value = '';
-    document.getElementById('editImageData').value = card.querySelector('.icon-container img')?.src?.split(',')[1] || '';
+    document.getElementById('editSalePrice').value = card.querySelector('.product-details [data-field="SalePrice"]')?.value || '';
+    document.getElementById('editPromotion').value = card.querySelector('.product-details [data-field="Promotion"]')?.value || '';
+    document.getElementById('editSupplierId').value = card.querySelector('.product-details [data-field="SupplierId"]')?.value || '';
+    document.getElementById('editImageData').value = card.querySelector('.product-details [data-field="ImageData"]')?.value || (card.querySelector('.icon-container img')?.src?.split(',')[1] || '');
     document.getElementById('edit-product-popup').style.display = 'block';
 }
 function hideEditProductPopup() {
      document.getElementById('popup-overlay').style.display = 'none';
     document.getElementById('edit-product-popup').style.display = 'none';
+}
+function showProductDetail(productId) {
+    const card = document.querySelector(`.flash-card[data-product-id='${productId}']`);
+    if (!card) return;
+    const details = card.querySelector('.product-details');
+    let html = '<div style="display: flex; flex-wrap: wrap; gap: 24px; align-items: flex-start;">';
+    // Left: image
+    const img = card.querySelector('.icon-container img');
+    if (img) {
+        html += `<div style='flex:0 0 140px;'><img src='${img.src}' alt='Product Image' style='max-width:140px;max-height:140px;border-radius:8px;box-shadow:0 2px 8px #0001;'/></div>`;
+    }
+    // Right: info table
+    html += '<div style="flex:1; min-width:220px;">';
+    html += '<table style="width:100%; border-collapse:separate; border-spacing:0 6px; font-size:1rem;">';
+    html += `<tr><td style='font-weight:600;'>Name:</td><td>${details.querySelector('h4').textContent}</td></tr>`;
+    html += `<tr><td style='font-weight:600;'>Unit:</td><td>${details.querySelector('p:nth-child(2)').textContent.split(': ')[1]}</td></tr>`;
+    html += `<tr><td style='font-weight:600;'>Cost Per Unit:</td><td>$${details.querySelector('p:nth-child(3)').textContent.split(': $')[1]}</td></tr>`;
+    html += `<tr><td style='font-weight:600;'>Stock:</td><td>${details.querySelector('p:nth-child(4)').textContent.split(': ')[1]}</td></tr>`;
+    html += `<tr><td style='font-weight:600;'>Sale Price:</td><td>$${details.querySelector('[data-field="SalePrice"]').value || ''}</td></tr>`;
+    html += `<tr><td style='font-weight:600;'>Supplier ID:</td><td>${details.querySelector('[data-field="SupplierId"]').value || ''}</td></tr>`;
+    html += `<tr><td style='font-weight:600;'>Product Code:</td><td>${details.querySelector('[data-field="ProductCode"]').value || ''}</td></tr>`;
+    html += `<tr><td style='font-weight:600;'>Category:</td><td>${details.querySelector('[data-field="Category"]').value || ''}</td></tr>`;
+    html += `<tr><td style='font-weight:600;'>Promotion:</td><td>${details.querySelector('[data-field="Promotion"]').value || ''}</td></tr>`;
+    html += '</table>';
+    html += '</div></div>';
+    document.getElementById('product-detail-body').innerHTML = html;
+    document.getElementById('popup-overlay').style.display = 'block';
+    document.getElementById('product-detail-modal').style.display = 'block';
+}
+function hideProductDetail() {
+    document.getElementById('popup-overlay').style.display = 'none';
+    document.getElementById('product-detail-modal').style.display = 'none';
 }
 // --- Tab stay logic using ViewData/ViewBag ---
 (function() {

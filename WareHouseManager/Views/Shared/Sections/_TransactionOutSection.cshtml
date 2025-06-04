@@ -2,8 +2,8 @@
 @{
     var customers = ViewData["AllCustomers"] as List<WareHouseManager.Models.Customer>;
     var products = ViewData["AllProducts"] as List<WareHouseManager.Models.Product>;
-    var controllerName = "Admin";
-    var addAction = "CreateTransactionOut";
+    var controllerName = ViewData["TransactionOutController"] as string ?? "Admin";
+    var addAction = ViewData["AddTransactionOutAction"] as string ?? "CreateTransactionOut";
     var activeTab = ViewData["ActiveTab"] as string ?? "product-tab";
     var displayStyle = activeTab == "transaction-out-tab" ? "block" : "none";
 }
@@ -101,82 +101,22 @@
 </form>
 
 <script>
+    window.addEventListener('DOMContentLoaded', function() {
+
+    window.productsList = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(products ?? new List<WareHouseManager.Models.Product>()));
+
+    })
+   
     function getProductByNameOut(name) {
         if (!window.productsList) return null;
         return window.productsList.find(p => p.productName === name);
     }
-    function processPaymentOut() {
-        const customerSelect = document.getElementById('customerSelect');
-        const customerId = customerSelect.selectedIndex > 0 ? customerSelect.options[customerSelect.selectedIndex].getAttribute('data-customer-id') : null;
-        if (!customerId) {
-            alert('Please select a customer.');
-            return;
-        }
-        const table = document.getElementById('pendingOrdersTableOut');
-        const details = [];
-        for (const row of table.rows) {
-            // Get productName from the cell, then lookup productId from productsList
-            const productName = row.cells[1] ? row.cells[1].textContent : null;
-            let productId = null;
-            if (productName && window.productsList) {
-                const productObj = window.productsList.find(p => p.productName === productName);
-                if (productObj) productId = productObj.productId || productObj.id;
-            }
-            // row.cells[2] is quantity, row.cells[3] is total (e.g. $100.00)
-            const quantity = row.cells.length > 2 && row.cells[2] ? parseInt(row.cells[2].textContent) : 0;
-            let unitPrice = 0;
-            if (!isNaN(quantity) && quantity > 0 && row.cells.length > 3 && row.cells[3]) {
-                const total = parseFloat(row.cells[3].textContent.replace('$',''));
-                unitPrice = !isNaN(total) ? total / quantity : 0;
-            }
-            details.push({ productId, quantity, unitPrice });
-        }
-        if (details.length === 0) {
-            alert('Please add at least one product.');
-            return;
-        }
-        const transactionOut = {
-            customerId: parseInt(customerId),
-            transactionDate: new Date().toISOString(),
-            details: details
-        };
-        console.log('Transaction Out:', transactionOut);
-        document.getElementById('transactionOutJson').value = JSON.stringify(transactionOut);
-        document.getElementById('addTransactionOutForm').submit();
+    function getProductById(id) {
+        if (!window.productsList) return null;
+        return window.productsList.find(p => String(p.productId ?? p.id) === String(id));
     }
-    function addPendingOrderOut() {
-        const customerSelect = document.getElementById('customerSelect');
-        const customerId = customerSelect.selectedIndex > 0 ? customerSelect.options[customerSelect.selectedIndex].getAttribute('data-customer-id') : null;
-        const productSelect = document.getElementById('productSelectOut');
-        // Get productId from selected option's data-product-id attribute
-        const selectedProductOption = productSelect.options[productSelect.selectedIndex];
-        const productId = selectedProductOption.getAttribute('data-product-id');
-        const productName = productSelect.value;
-        const quantity = parseInt(document.getElementById('productQuantityOut').value);
-        const unitPrice = parseFloat(document.getElementById('productPriceOut').textContent);
-        if (!customerId || !productId || !quantity || isNaN(unitPrice)) {
-            alert('Please select customer, product, and enter quantity.');
-            return;
-        }
-        const table = document.getElementById('pendingOrdersTableOut');
-        const row = table.insertRow();
-        row.insertCell(0).textContent = customerId;
-        // Store productId in a hidden cell for reliable retrieval
-        const productCell = row.insertCell(1);
-        productCell.textContent = productName;
-        const hiddenProductIdCell = row.insertCell(2);
-        hiddenProductIdCell.style.display = 'none';
-        hiddenProductIdCell.textContent = productId;
-        row.insertCell(3).textContent = quantity;
-        row.insertCell(4).textContent = `$${(unitPrice * quantity).toFixed(2)}`;
-        const actionsCell = row.insertCell(5);
-        const removeBtn = document.createElement('button');
-        removeBtn.textContent = 'Remove';
-        removeBtn.className = 'btn btn-danger btn-sm';
-        removeBtn.onclick = function () { table.deleteRow(row.rowIndex - 0); };
-        actionsCell.appendChild(removeBtn);
-        updateTotalPayableOut();
-    }
+
+ 
     function updateProductInfoOut() {
         const productName = document.getElementById('productSelectOut').value;
         const product = getProductByNameOut(productName);

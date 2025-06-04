@@ -27,9 +27,9 @@ namespace WareHouseManager.Repositories
             return _httpContextAccessor.HttpContext?.Session.GetString("AuthToken");
         }
 
-        public async Task<List<TransactionOut>> GetTransactionOutsAsync()
+        public async Task<List<TransactionOutResponse>> GetTransactionOutsAsync()
         {
-            var transactions = new List<TransactionOut>();
+            var transactions = new List<TransactionOutResponse>();
             var token = GetToken();
             using (var client = new HttpClient())
             {
@@ -39,7 +39,7 @@ namespace WareHouseManager.Repositories
                 if (response.IsSuccessStatusCode)
                 {
                     var json = await response.Content.ReadAsStringAsync();
-                    var result = JsonSerializer.Deserialize<List<TransactionOut>>(json, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+                    var result = JsonSerializer.Deserialize<List<TransactionOutResponse>>(json, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
                     if (result != null)
                         transactions = result;
                 }
@@ -64,6 +64,26 @@ namespace WareHouseManager.Repositories
                 var response = await client.PostAsync(_apiBaseUrl, content);
                 return response.IsSuccessStatusCode;
             }
+        }
+
+        public async Task<List<TransactionOutResponse>> GetTransactionOutResponsesAsync()
+        {
+            var transactions = new List<TransactionOutResponse>();
+            var token = _httpContextAccessor.HttpContext?.Session.GetString("AuthToken");
+            using (var client = new HttpClient())
+            {
+                if (!string.IsNullOrEmpty(token))
+                    client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+                var response = await client.GetAsync(_apiBaseUrl);
+                if (response.IsSuccessStatusCode)
+                {
+                    var json = await response.Content.ReadAsStringAsync();
+                    var result = JsonSerializer.Deserialize<List<TransactionOutResponse>>(json, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+                    if (result != null)
+                        transactions = result;
+                }
+            }
+            return transactions;
         }
     }
 }

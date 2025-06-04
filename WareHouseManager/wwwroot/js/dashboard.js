@@ -8,7 +8,7 @@ function showTab(tabId) {
 
 function showAddProductPopup() {
     console.log('showAddProductPopup called');
-   showBlurredBackground();
+    showBlurredBackground();
     document.getElementById('add-product-popup').style.display = 'block';
 }
 function showBlurredBackground() {
@@ -82,7 +82,7 @@ function deleteSupplier(supplierId) {
 
 function showAddSupplierPopup() {
     document.getElementById('add-supplier-popup').style.display = 'block';
-   let overlay = document.getElementById('popup-overlay');
+    let overlay = document.getElementById('popup-overlay');
     if (!overlay) {
         overlay = document.createElement('div');
         overlay.id = 'popup-overlay';
@@ -156,24 +156,30 @@ function updateTotalAmount() {
 }
 
 function addPendingOrder() {
-    const supplier = document.getElementById('supplierSelect').value;
-    const product = document.getElementById('productSelect').value;
+    const supplierId = document.getElementById('supplierSelect').value;
+    const supplierSelect = document.getElementById('supplierSelect');
+    const supplierName = supplierSelect.options[supplierSelect.selectedIndex].text;
+    const productId = document.getElementById('productSelect').value;
+    const productSelect = document.getElementById('productSelect');
+    const productName = productSelect.options[productSelect.selectedIndex].text;
     const quantity = parseInt(document.getElementById('productQuantity').value) || 0;
-    const total = parseFloat(document.getElementById('totalAmount').textContent) || 0;
+    const total = parseFloat(document.getElementById('totalAmount').value) || 0;
 
-    if (!supplier || !product || quantity <= 0) {
+    if (!supplierId || !productId || quantity <= 0) {
         alert('Please fill in all fields.');
         return;
     }
 
     const table = document.getElementById('pendingOrdersTable');
     const row = table.insertRow();
+    // Add visible cells
     row.innerHTML = `
-        <td>${supplier}</td>
-        <td>${product}</td>
+        <td>${supplierName}</td>
+        <td>${productId}</td>
         <td>${quantity}</td>
         <td>$${total.toFixed(2)}</td>
         <td><button class="delete-button" onclick="removePendingOrder(this)">Remove</button></td>
+        <td style="display:none;">${supplierId}</td>
     `;
 
     updateTotalPayable();
@@ -240,26 +246,36 @@ function updateTotalAmountOut() {
 }
 
 function addPendingOrderOut() {
-    const customer = document.getElementById('customerSelect').value;
-    const product = document.getElementById('productSelectOut').value;
-    const quantity = parseInt(document.getElementById('productQuantityOut').value) || 0;
-    const total = parseFloat(document.getElementById('totalAmountOut').textContent) || 0;
-
-    if (!customer || !product || quantity <= 0) {
-        alert('Please fill in all fields.');
+    const customerSelect = document.getElementById('customerSelect');
+    const customerId = customerSelect.selectedIndex > 0 ? customerSelect.options[customerSelect.selectedIndex].getAttribute('data-customer-id') : null;
+    const customerName = customerSelect.options[customerSelect.selectedIndex].text;
+    const productSelect = document.getElementById('productSelectOut');
+    const selectedProductOption = productSelect.options[productSelect.selectedIndex];
+    const productId = selectedProductOption.getAttribute('data-product-id');
+    const productName = productSelect.value;
+    const quantity = parseInt(document.getElementById('productQuantityOut').value);
+    const unitPrice = parseFloat(document.getElementById('productPriceOut').textContent);
+    const total = (!isNaN(unitPrice) && !isNaN(quantity)) ? unitPrice * quantity : 0;
+    if (!customerId || !productId || !quantity || isNaN(unitPrice)) {
+        alert('Please select customer, product, and enter quantity.');
         return;
     }
-
     const table = document.getElementById('pendingOrdersTableOut');
     const row = table.insertRow();
+    // Add visible and hidden cells using innerHTML (like your example)
     row.innerHTML = `
-        <td>${customer}</td>
-        <td>${product}</td>
-        <td>${quantity}</td>
-        <td>$${total.toFixed(2)}</td>
-        <td><button class="delete-button" onclick="removePendingOrderOut(this)">Remove</button></td>
-    `;
-
+            <td>${customerName}</td>
+            <td>${productName}</td>
+            <td>${quantity}</td>
+            <td>$${total.toFixed(2)}</td>
+            <td><button class="btn btn-danger btn-sm remove-pending-order-out">Remove</button></td>
+            <td style="display:none;">${customerId}</td>
+        `;
+    // Attach event for remove button to ensure it works after using innerHTML
+    row.querySelector('.remove-pending-order-out').onclick = function() {
+        row.remove();
+        updateTotalPayableOut();
+    };
     updateTotalPayableOut();
 }
 
@@ -291,20 +307,105 @@ function updateRemainingBalanceOut() {
     document.getElementById('remainingBalanceOut').textContent = remainingBalance.toFixed(2);
 }
 
-// function processPaymentOut() {
-//     const remainingBalance = parseFloat(document.getElementById('remainingBalanceOut').textContent) || 0;
-
-//     if (remainingBalance > 0) {
-//         alert('Please pay the full amount.');
-//         return;
-//     }
-
-//     alert('Payment successful!');
-//     document.getElementById('pendingOrdersTableOut').innerHTML = '';
-//     document.getElementById('totalPayableOut').value = '$0.00';
-//     document.getElementById('amountPaidOut').value = '';
-//     document.getElementById('remainingBalanceOut').textContent = '0.00';
-// }
+ function getProductById(id) {
+        if (!window.productsList) return null;
+        return window.productsList.find(p => String(p.productId ?? p.id) === String(id));
+    }
+function processPaymentOut() {
+        // Build details from pending orders table
+        const table = document.getElementById('pendingOrdersTableOut');
+        const rows = Array.from(table.rows);
+        if (rows.length === 0) {
+            alert('Please add at least one product to pending orders.');
+            return;
+        }
+        // Group details by customerId (assume customerId is in a hidden cell, e.g., cell[5])
+        let customerGroups = {};
+        for (const row of rows) {
+            if (row.cells.length < 6) continue; // skip malformed rows
+            const customerId = row.cells[5] ? row.cells[5].textContent : null;
+            if (!customerId) continue;
+            const productName = row.cells[1] ? row.cells[1].textContent : null;
+            let productObj = null;
+            let productId = null;
+            if (productName && window.productsList) {
+                productObj = window.productsList.find(p => p.productName === productName);
+                if (productObj) productId = productObj.productId || productObj.ProductId || productObj.id;
+            }
+            // Ensure productId is always a valid integer
+            if (!productId && productObj && (productObj.ProductId || productObj.productId || productObj.id)) {
+                productId = productObj.ProductId || productObj.productId || productObj.id;
+            }
+            productId = parseInt(productId);
+            if (isNaN(productId)) productId = null;
+            const quantity = row.cells[2] ? parseInt(row.cells[2].textContent) : 0;
+            let unitPrice = 0;
+            if (!isNaN(quantity) && quantity > 0 && row.cells[3]) {
+                const total = parseFloat(row.cells[3].textContent.replace('$',''));
+                unitPrice = !isNaN(total) ? total / quantity : 0;
+            }
+            if (!customerGroups[customerId]) {
+                customerGroups[customerId] = {
+                    details: []
+                };
+            }
+            customerGroups[customerId].details.push({
+                productId: productId, // will be int or null
+                product: getProductById(productId), // always send null to avoid circular reference
+                quantity: quantity,
+                unitPrice: unitPrice
+            });
+        }
+        const customerIds = Object.keys(customerGroups);
+        if (customerIds.length === 0) {
+            alert('No valid customers found in pending orders.');
+            return;
+        }
+        // For each customer, create a form, set JSON, and submit sequentially
+        function submitNext(index) {
+            if (index >= customerIds.length) {
+                // Clear the table after all submissions
+                document.getElementById('pendingOrdersTableOut').innerHTML = '';
+                updateTotalPayableOut();
+                return;
+            }
+            const customerId = customerIds[index];
+            const group = customerGroups[customerId];
+            const transactionOut = {
+                customerId: parseInt(customerId),
+                transactionDate: new Date().toISOString(),
+                details: group.details
+            };
+            // Create a hidden form dynamically
+            const form = document.createElement('form');
+            form.method = 'post';
+            form.action = document.getElementById('addTransactionOutForm').action;
+            form.style.display = 'none';
+            // CSRF token
+            const csrfInput = document.querySelector('#addTransactionOutForm input[name=__RequestVerificationToken]');
+            if (csrfInput) {
+                const tokenInput = document.createElement('input');
+                tokenInput.type = 'hidden';
+                tokenInput.name = '__RequestVerificationToken';
+                tokenInput.value = csrfInput.value;
+                form.appendChild(tokenInput);
+            }
+            // JSON input
+            const jsonInput = document.createElement('input');
+            jsonInput.type = 'hidden';
+            jsonInput.name = 'transactionOutJson';
+            jsonInput.value = JSON.stringify(transactionOut);
+            console.log('Submitting transactionOut:', transactionOut);
+            form.appendChild(jsonInput);
+            document.body.appendChild(form);
+            form.submit();
+            setTimeout(() => {
+                document.body.removeChild(form);
+                submitNext(index + 1);
+            }, 500);
+        }
+        submitNext(0);
+    }
 
 function createPopupOverlay() {
     let overlay = document.getElementsByClassName('popup-overlay');

@@ -27,6 +27,7 @@ namespace WareHouseManager.Repositories
 
         public async Task<List<Supplier>> GetSuppliersAsync()
         {
+            Console.WriteLine("Fetching suppliers from API");
             var suppliers = new List<Supplier>();
             var token = GetToken();
             using (var client = new HttpClient())
@@ -42,11 +43,17 @@ namespace WareHouseManager.Repositories
                         suppliers = result;
                 }
             }
+            Console.WriteLine($"Fetched {suppliers.Count} suppliers");
+            foreach (var supplier in suppliers)
+            {
+                Console.WriteLine($"Supplier: {supplier.Id}, {supplier.Name}, {supplier.Address}, {supplier.Mobile}");
+            }
             return suppliers;
         }
 
         public async Task<bool> AddSupplierAsync(Supplier supplier)
         {
+
             var token = GetToken();
             using (var client = new HttpClient())
             {

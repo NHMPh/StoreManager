@@ -34,11 +34,11 @@ namespace WareHouseManager.Controllers
                     {
                         return RedirectToAction("Dashboard", "Admin");
                     }
-                    else if (user.user.Role == "WarehouseManager" && model.Role == "WarehouseManager")
+                    else if (user.user.Role == "Manager" && model.Role == "WarehouseManager")
                     {
                         return RedirectToAction("Dashboard", "Warehouse");
                     }
-                    else if (user.user.Role == "SalesManager" && model.Role == "SalesManager")
+                    else if (user.user.Role == "Sale" && model.Role == "SalesManager")
                     {
                         return RedirectToAction("Dashboard", "Sales");
                     }

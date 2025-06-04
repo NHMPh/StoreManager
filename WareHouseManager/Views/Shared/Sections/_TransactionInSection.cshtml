@@ -122,49 +122,89 @@ window.addEventListener('DOMContentLoaded', function() {
 
      
 function processPayment() {
-        // Get selected supplier
-    const supplierId = document.getElementById('supplierSelect').value;
-    console.log('Selected Supplier ID:', supplierId);
-    const supplierObj = getSupplierById(supplierId);
-    console.log('Selected Supplier Object:', supplierObj);
     // Build details from pending orders table
     const table = document.getElementById('pendingOrdersTable');
-    const details = [];
-    for (const row of table.rows) { 
-        const productId = row.cells[1].textContent;
-        const quantity = parseInt(row.cells[2].textContent);
-        const total = parseFloat(row.cells[3].textContent.replace('$',''));
-        const productObj = getProductById(productId);
-        if (productObj) {
-            details.push({
-                id: 0,
-                transactionInId: 0,
-                transactionIn: null,
-                productId: productObj.productId || productObj.id,
-                product: productObj,
-                quantity: quantity,
-                unitPrice: productObj.costPerUnit || productObj.importPrice || 0
-            });
-        }
-    }
-    if (!supplierObj || details.length === 0) {
-        alert('Please select a supplier and add at least one product.');
+    const rows = Array.from(table.rows);
+    if (rows.length === 0) {
+        alert('Please add at least one product to pending orders.');
         return;
     }
-    // Build TransactionIn object
-    const transactionIn = {
-        id: 0,
-        transactionDate: new Date().toISOString(),
-        supplierId: supplierObj.id,
-        supplier: supplierObj,
-        details: details
-    };
-    
-    document.getElementById('transactionInJson').value = JSON.stringify(transactionIn);
-    console.log('Transaction In JSON:', document.getElementById('transactionInJson').value);
-
-    document.getElementById('addTransactionInForm').submit();
-} 
+    // Group details by supplierId (assume supplierId is in a hidden cell, e.g., cell[5])
+    let supplierGroups = {};
+    for (const row of rows) {
+        // Get supplierId from hidden cell (cell[5])
+        const supplierId = row.cells[5] ? row.cells[5].textContent : null;
+        if (!supplierId) continue;
+        const supplierObj = getSupplierById(supplierId);
+        if (!supplierObj) continue;
+        const productId = row.cells[1].textContent;
+        const quantity = parseInt(row.cells[2].textContent);
+        const productObj = getProductById(productId);
+        if (!productObj) continue;
+        if (!supplierGroups[supplierId]) {
+            supplierGroups[supplierId] = {
+                supplier: supplierObj,
+                details: []
+            };
+        }
+        supplierGroups[supplierId].details.push({
+            id: 0,
+            transactionInId: 0,
+            transactionIn: null,
+            productId: productObj.productId || productObj.id,
+            product: productObj,
+            quantity: quantity,
+            unitPrice: productObj.costPerUnit || productObj.importPrice || 0
+        });
+    }
+    const supplierIds = Object.keys(supplierGroups);
+    if (supplierIds.length === 0) {
+        alert('No valid suppliers found in pending orders.');
+        return;
+    }
+    // For each supplier, create a form, set JSON, and submit sequentially
+    function submitNext(index) {
+        if (index >= supplierIds.length) return;
+        const supplierId = supplierIds[index];
+        const group = supplierGroups[supplierId];
+        const transactionIn = {
+            id: 0,
+            transactionDate: new Date().toISOString(),
+            supplierId: group.supplier.id,
+            supplier: group.supplier,
+            details: group.details
+        };
+        // Create a hidden form dynamically
+        const form = document.createElement('form');
+        form.method = 'post';
+        form.action = document.getElementById('addTransactionInForm').action;
+        form.style.display = 'none';
+        // CSRF token
+        const csrfInput = document.querySelector('#addTransactionInForm input[name=__RequestVerificationToken]');
+        if (csrfInput) {
+            const tokenInput = document.createElement('input');
+            tokenInput.type = 'hidden';
+            tokenInput.name = '__RequestVerificationToken';
+            tokenInput.value = csrfInput.value;
+            form.appendChild(tokenInput);
+        }
+        // JSON input
+        const jsonInput = document.createElement('input');
+        jsonInput.type = 'hidden';
+        jsonInput.name = 'transactionInJson';
+        jsonInput.value = JSON.stringify(transactionIn);
+        form.appendChild(jsonInput);
+        document.body.appendChild(form);
+        form.submit();
+        // Remove the form after submission (optional, for cleanup)
+        setTimeout(() => {
+            document.body.removeChild(form);
+            // Submit next supplier after a short delay
+            submitNext(index + 1);
+        }, 500);
+    }
+    submitNext(0);
+}
     
     function showAddTransactionInPopup() {
         document.getElementById('popup-overlay').style.display = 'block';

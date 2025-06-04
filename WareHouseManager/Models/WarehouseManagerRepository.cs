@@ -12,7 +12,7 @@ namespace WareHouseManager.Repositories
 {
     public class WarehouseManagerRepository
     {
-        private readonly string _apiUrl = "https://modest-gould.103-28-36-75.plesk.page/api/WarehouseManagers";
+        private readonly string _apiUrl = "https://modest-gould.103-28-36-75.plesk.page/api/User";
         private readonly IHttpContextAccessor _httpContextAccessor;
 
         public WarehouseManagerRepository(IHttpContextAccessor httpContextAccessor)

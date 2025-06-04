@@ -14,9 +14,12 @@
 <div id="supplier-tab" class="tab-content" style="display: @displayStyle;">
     <div class="title-bar" style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px;">
         <h3 style="margin: 0;">Suppliers</h3>
-        <button type="button" class="btn btn-success" style="height: 38px;" onclick="showAddSupplierPopup()">
-            <i class="fas fa-plus"></i> Add Supplier
-        </button>
+        @if (controllerName == "Admin")
+        {
+            <button type="button" class="btn btn-success" style="height: 38px;" onclick="showAddSupplierPopup()">
+                <i class="fas fa-plus"></i> Add Supplier
+            </button>
+        }
     </div>
     <div class="search-bar" style="display: flex; align-items: center; gap: 10px; margin-bottom: 16px;">
         <input type="text" id="supplierSearch" placeholder="Search suppliers by name..." onkeyup="searchSuppliers()" class="form-control" style="width: 300px;" />
@@ -39,15 +42,18 @@
                         <p>Address: @supplier.Address</p>
                     </div>
                     <div class="supplier-actions">
-                        <button class="edit-button" type="button" onclick="openEditSupplierPopup(@supplier.Id)">
-                            <i class="fas fa-edit"></i> Edit
-                        </button>
-                        <form method="post" asp-action="@deleteAction" asp-controller="@controllerName" style="display:inline;" onsubmit="return confirm('Are you sure you want to delete this supplier?');">
-                            <input type="hidden" name="id" value="@supplier.Id" />
-                            <button type="submit" class="delete-button">
-                                <i class="fas fa-trash"></i> Delete
+                        @if (controllerName == "Admin")
+                        {
+                            <button class="edit-button" type="button" onclick="openEditSupplierPopup(@supplier.Id)">
+                                <i class="fas fa-edit"></i> Edit
                             </button>
-                        </form>
+                            <form method="post" asp-action="@deleteAction" asp-controller="@controllerName" style="display:inline;" onsubmit="return confirm('Are you sure you want to delete this supplier?');">
+                                <input type="hidden" name="id" value="@supplier.Id" />
+                                <button type="submit" class="delete-button">
+                                    <i class="fas fa-trash"></i> Delete
+                                </button>
+                            </form>
+                        }
                     </div>
                 </div>
             }
@@ -59,6 +65,8 @@
     </div>
 </div>
 
+@if (controllerName == "Admin")
+{
 <div id="add-supplier-popup" class="popup" style="display: none;">
     <div class="popup-content">
         <h3>Add Supplier</h3>
@@ -80,24 +88,27 @@
                 <label for="supplierAddress">Address</label>
                 <input type="text" id="supplierAddress" name="Address" maxlength="200" />
             </div>
-            <div class="form-group">
+            @* <div class="form-group">
                 <label for="supplierProducts">Products Provided</label>
                 <div class="tagbox" id="supplierProductsTagbox">
                     <!-- tags will be inserted here -->
                     <select id="supplierProductSelect" class="form-control" style="width: 220px; display: inline-block; margin-right: 8px;">
                         <option value="">Select product...</option>
-                        @if (ViewData["AllProducts"] is List<WareHouseManager.Models.Product> allProducts)
-                        {
-                            foreach (var product in allProducts)
+                        @{
+                            var allProductsList = ViewData["AllProducts"] as List<WareHouseManager.Models.Product>;
+                            if (allProductsList != null)
                             {
-                                <option value="@product.ProductName">@product.ProductName</option>
+                                foreach (var product in allProductsList)
+                                {
+                                    <option value="@product.ProductName">@product.ProductName</option>
+                                }
                             }
                         }
                     </select>
                 </div>
                 <input type="hidden" id="products" name="ProductsString" />
                 <small class="form-text text-muted">Select a product from the dropdown to add as a tag. Click × to remove a product.</small>
-            </div>
+            </div> *@
             <button type="submit" class="submit-button">Submit</button>
             <button type="button" class="cancel-button" onclick="hideAddSupplierPopup()">Cancel</button>
         </form>
@@ -126,28 +137,32 @@
                 <label for="editSupplierAddress">Address</label>
                 <input type="text" id="editSupplierAddress" name="Address" maxlength="200" />
             </div>
-            <div class="form-group">
+            @* <div class="form-group">
                 <label for="editSupplierProducts">Products Provided</label>
                 <div class="tagbox" id="editSupplierProductsTagbox">
                     <!-- tags will be inserted here -->
                     <select id="editSupplierProductSelect" class="form-control" style="width: 220px; display: inline-block; margin-right: 8px;">
                         <option value="">Select product...</option>
-                        @if (ViewData["AllProducts"] is List<WareHouseManager.Models.Product> allProducts)
-                        {
-                            foreach (var product in allProducts)
+                        @{
+                            var allProductsList = ViewData["AllProducts"] as List<WareHouseManager.Models.Product>;
+                            if (allProductsList != null)
                             {
-                                <option value="@product.ProductName">@product.ProductName</option>
+                                foreach (var product in allProductsList)
+                                {
+                                    <option value="@product.ProductName">@product.ProductName</option>
+                                }
                             }
                         }
                     </select>
                 </div>
                 <input type="hidden" id="editProducts" name="ProductsString" />
-            </div>
+            </div> *@
             <button type="submit" class="submit-button">Save</button>
             <button type="button" class="cancel-button" onclick="hideEditSupplierPopup()">Cancel</button>
         </form>
     </div>
 </div>
+}
 
 <script src="/js/tagbox-supplier.js"></script>
 <script>
