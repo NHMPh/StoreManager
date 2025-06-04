@@ -21,7 +21,7 @@ namespace WareHouseManager.Models
         [JsonPropertyName("mobile")]
         public string? Mobile { get; set; }
 
-        [JsonPropertyName("Phone")]
+        [JsonPropertyName("phone")]
         [Required(ErrorMessage = "Mobile is required.")]
         [StringLength(20)]
         public string? Phone { get; set; }

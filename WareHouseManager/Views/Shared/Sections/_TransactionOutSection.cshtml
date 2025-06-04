@@ -4,7 +4,7 @@
     var products = ViewData["AllProducts"] as List<WareHouseManager.Models.Product>;
     var controllerName = ViewData["TransactionOutController"] as string ?? "Admin";
     var addAction = ViewData["AddTransactionOutAction"] as string ?? "CreateTransactionOut";
-    var activeTab = ViewData["ActiveTab"] as string ?? "transaction-out-tab";
+    var activeTab = ViewData["ActiveTab"] as string ?? "product-tab";
     var displayStyle = activeTab == "transaction-out-tab" ? "block" : "none";
 }
 <div id="transaction-out-tab" class="tab-content" style="display: @displayStyle;">
@@ -82,14 +82,12 @@
             <label for="totalPayableOut">Total Payable</label>
             <input type="text" id="totalPayableOut" class="form-control" readonly />
         </div>
-        <div class="form-group">
+        @* <div class="form-group">
             <label for="amountPaidOut">Amount Paid</label>
             <input type="number" id="amountPaidOut" class="form-control" min="0"
                 onchange="updateRemainingBalanceOut()" />
-        </div>
-        <div class="form-group">
-            <p>Remaining Balance: $<span id="remainingBalanceOut">0.00</span></p>
-        </div>
+        </div> *@
+        
         <button class="submit-button" type="button" onclick="processPaymentOut()">Pay</button>
     </div>
 </div>

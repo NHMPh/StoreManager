@@ -3,6 +3,7 @@ using WareHouseManager.Repositories;
 using WareHouseManager.Models;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Http;
 
 namespace WareHouseManager.Controllers
 {
@@ -13,14 +14,16 @@ namespace WareHouseManager.Controllers
         private readonly TransactionOutRepository _transactionOutRepository;
         private readonly CustomerRepository _customerRepository;
         private readonly SupplierRepository _supplierRepository;
+        private readonly IHttpContextAccessor _httpContextAccessor;
 
-        public SalesController(ProductRepository productRepository, TransactionInRepository transactionInRepository, TransactionOutRepository transactionOutRepository, CustomerRepository customerRepository, SupplierRepository supplierRepository)
+        public SalesController(ProductRepository productRepository, TransactionInRepository transactionInRepository, TransactionOutRepository transactionOutRepository, CustomerRepository customerRepository, SupplierRepository supplierRepository, IHttpContextAccessor httpContextAccessor)
         {
             _productRepository = productRepository;
             _transactionInRepository = transactionInRepository;
             _transactionOutRepository = transactionOutRepository;
             _customerRepository = customerRepository;
             _supplierRepository = supplierRepository;
+            _httpContextAccessor = httpContextAccessor;
         }
 
         public async Task<IActionResult> Dashboard()
@@ -37,6 +40,7 @@ namespace WareHouseManager.Controllers
             ViewData["AllProducts"] = products;
             ViewData["AllCustomers"] = customers;
             ViewData["AllTransactionsOut"] = transactionsOut;
+            ViewData["ActiveTab"] = GetActiveTab();
             return View(model);
         }
 
@@ -44,6 +48,7 @@ namespace WareHouseManager.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> CreateTransactionOut([FromForm] string transactionOutJson)
         {
+            SetActiveTab("transaction-out-tab");
             if (string.IsNullOrWhiteSpace(transactionOutJson))
             {
                 TempData["Error"] = "Invalid transaction data.";
@@ -95,8 +100,19 @@ namespace WareHouseManager.Controllers
         [ActionName("DeleteProduct")]
         public async Task<IActionResult> DeleteProduct([FromForm] int id)
         {
+            
             await _productRepository.DeleteProductAsync(id);
             return RedirectToAction("Dashboard");
+        }
+         private void SetActiveTab(string tabName)
+        {
+            _httpContextAccessor.HttpContext?.Session.SetString("ActiveTab", tabName);
+        }
+
+        // Helper to get the active tab from session
+        private string GetActiveTab()
+        {
+            return _httpContextAccessor.HttpContext?.Session.GetString("ActiveTab") ?? "product-tab";
         }
     }
 }

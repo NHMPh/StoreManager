@@ -4,7 +4,7 @@
     var addAction = ViewData["AddSupplierAction"] as string ?? "AddSupplier";
     var updateAction = ViewData["UpdateSupplierAction"] as string ?? "UpdateSupplier";
     var deleteAction = ViewData["DeleteSupplierAction"] as string ?? "DeleteSupplier";
-    var activeTab = ViewData["ActiveTab"] as string ?? "supplier-tab";
+    var activeTab = ViewData["ActiveTab"] as string ?? "product-tab";
     var displayStyle = activeTab == "supplier-tab" ? "block" : "none";
 }
 
@@ -169,6 +169,7 @@ function showAddSupplierPopup() {
 function hideAddSupplierPopup() {
     document.getElementById('popup-overlay').style.display = 'none';
     document.getElementById('add-supplier-popup').style.display = 'none';
+   
 }
 function openEditSupplierPopup(supplierId) {
     document.getElementById('popup-overlay').style.display = 'block';

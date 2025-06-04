@@ -1,6 +1,6 @@
 @model List<WareHouseManager.Models.User>
 @{
-    var activeTab = ViewData["ActiveTab"] as string ?? "warehouse-manager-tab";
+    var activeTab = ViewData["ActiveTab"] as string ?? "product-tab";
     var displayStyle = activeTab == "warehouse-manager-tab" ? "block" : "none";
     var controllerName = "Admin";
     var addAction = "AddWarehouseManager";

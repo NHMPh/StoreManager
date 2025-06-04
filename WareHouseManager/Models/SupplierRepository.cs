@@ -56,6 +56,7 @@ namespace WareHouseManager.Repositories
                 if (!string.IsNullOrEmpty(token))
                     client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
                 var json = JsonSerializer.Serialize(supplier);
+                Console.WriteLine($"Adding supplier: {json}");
                 var content = new StringContent(json, Encoding.UTF8, "application/json");
                 var response = await client.PostAsync(_apiUrl, content);
                 return response.IsSuccessStatusCode;

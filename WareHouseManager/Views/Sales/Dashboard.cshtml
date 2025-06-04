@@ -11,7 +11,7 @@
     ViewData["AddTransactionOutAction"] = "CreateTransactionOut";
     ViewData["AllProducts"] = Model.Products;
     ViewData["AllCustomers"] = Model.Customers;
-     ViewData["DeleteSupplierAction"] = "DeleteSupplier";
+    ViewData["DeleteSupplierAction"] = "DeleteSupplier";
     ViewData["CustomerController"] = "Sales";
     ViewData["AddCustomerAction"] = "AddCustomer";
     ViewData["UpdateCustomerAction"] = "UpdateCustomer";
@@ -23,18 +23,74 @@
 <link rel="stylesheet" href="/css/admin-dashboard.css" />
 <link rel="stylesheet" href="/css/dashboard-popup.css" />
 <div id="popup-overlay" class="popup-overlay" style="display: none;"></div>
-<div class="sidebar">
+<div class="sidebar" id="sidebar" style="position:relative;">
+    <button id="sidebar-toggle" class="sidebar-toggle" onclick="toggleSidebar()" title="Minimize/Expand Sidebar">
+        <span id="sidebar-toggle-icon" style="color: #fff; font-size: 1.5em; pointer-events: none;">&#9776;</span>
+    </button>
     <h2>Sales Manager Panel</h2>
     <div class="tab" onclick="showTab('product-tab')">Manage Products</div>
     <div class="tab" onclick="showTab('customer-tab')">Customers</div>
     <div class="tab" onclick="showTab('transaction-out-tab')">Transaction Out</div>
-    <div class="tab" onclick="showTab('settings-tab')">Settings</div>
     <div class="tab logout-tab" onclick="window.location.href='/Account/Login'">Logout</div>
 </div>
 <div class="content">
     <partial name="~/Views/Shared/Sections/_ProductsSection.cshtml" model="Model.Products" />
     <partial name="~/Views/Shared/Sections/_CustomersSection.cshtml" model="Model.Customers" />
     <partial name="~/Views/Shared/Sections/_TransactionOutSection.cshtml" />
-     <partial name="~/Views/Shared/Sections/_SettingsSection.cshtml" />
 </div>
+<style>
+.sidebar {
+    position: relative;
+    transition: width 0.3s cubic-bezier(.4,0,.2,1);
+}
+.sidebar-toggle {
+    position: absolute;
+    top: 50%;
+    left: 100%;
+    transform: translateY(-50%);
+    transform: translateX(-50%);
+    z-index: 9999;
+    background: #383838;
+    border-radius: 50%;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    border: 1px solid #ddd;
+    width: 36px;
+    height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: left 0.3s cubic-bezier(.4,0,.2,1);
+}
+.sidebar.minimized {
+    width: 48px !important;
+    min-width: 48px !important;
+    overflow-x: hidden;
+    transition: width 0.3s cubic-bezier(.4,0,.2,1);
+}
+.sidebar.minimized #sidebar-toggle {
+    left: 48px;
+}
+.sidebar.minimized h2,
+.sidebar.minimized .tab {
+    display: none;
+}
+#sidebar-toggle {
+    /* see inline style above for position */
+}
+</style>
+<script>
+function toggleSidebar() {
+    var sidebar = document.getElementById('sidebar');
+    var button = document.getElementById('sidebar-toggle');
+    var icon = document.getElementById('sidebar-toggle-icon');
+    sidebar.classList.toggle('minimized');
+    if (sidebar.classList.contains('minimized')) {
+        icon.innerHTML = '&#9654;'; // right arrow
+        button.style.left = '48px';
+    } else {
+        icon.innerHTML = '&#9776;'; // hamburger
+        button.style.left = '100%';
+    }
+}
+</script>
 <script src="/js/dashboard.js?v=@System.IO.File.GetLastWriteTimeUtc(System.IO.Path.Combine(Directory.GetCurrentDirectory(), "wwwroot/js/dashboard.js")).Ticks"></script>

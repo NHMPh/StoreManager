@@ -1,6 +1,6 @@
 @* Manage Orders Section *@
 @{
-    var activeTab = ViewData["ActiveTab"] as string ?? "orders-tab";
+    var activeTab = ViewData["ActiveTab"] as string ?? "product-tab";
     var displayStyle = activeTab == "orders-tab" ? "block" : "none";
 }
 <div id="orders-tab" class="tab-content" style="display: @displayStyle;">

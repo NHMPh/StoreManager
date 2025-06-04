@@ -6,7 +6,7 @@
     var deleteAction = ViewData["DeleteCustomerAction"] as string ?? "DeleteCustomer";
     var activeTab = ViewData["ActiveTab"] as string ?? "customer-tab";
     var displayStyle = activeTab == "customer-tab" ? "block" : "none";
-
+    Console.WriteLine($"Active Tab: {ViewData["ActiveTab"] as string}, Display Style: {displayStyle}");
 }
 
 

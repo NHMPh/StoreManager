@@ -4,7 +4,7 @@
     var products = ViewData["AllProducts"] as List<WareHouseManager.Models.Product>;
     var controllerName = ViewData["TransactionInController"] as string ?? "Admin";
     var addAction = ViewData["AddTransactionInAction"] as string ?? "CreateTransactionIn";
-    var activeTab = ViewData["ActiveTab"] as string ?? "transaction-tab";
+    var activeTab = ViewData["ActiveTab"] as string ?? "product-tab";
     var displayStyle = activeTab == "transaction-tab" ? "block" : "none";
 }
 <div id="transaction-tab" class="tab-content" style="display: @displayStyle;">
@@ -80,13 +80,11 @@
             <label for="totalPayable">Total Payable</label>
             <input type="text" id="totalPayable" class="form-control" readonly />
         </div>
-        <div class="form-group">
+        @* <div class="form-group">
             <label for="amountPaid">Amount Paid</label>
             <input type="number" id="amountPaid" class="form-control" min="0" onchange="updateRemainingBalance()" />
-        </div>
-        <div class="form-group">
-            <p>Remaining Balance: $<span id="remainingBalance">0.00</span></p>
-        </div>
+        </div> *@
+       
         <button class="submit-button" type="button" onclick="processPayment()">Pay</button>
     </div>
 </div>

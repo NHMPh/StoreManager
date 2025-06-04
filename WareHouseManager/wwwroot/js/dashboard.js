@@ -241,8 +241,13 @@ function updateTotalAmountOut() {
     const quantity = parseInt(document.getElementById('productQuantityOut').value) || 0;
     const price = parseFloat(document.getElementById('productPriceOut').textContent) || 0;
     const totalAmount = quantity * price;
-
-    document.getElementById('totalAmountOut').textContent = totalAmount.toFixed(2);
+    // Set both value and textContent for compatibility with input and span
+    const totalAmountOut = document.getElementById('totalAmountOut');
+    if (totalAmountOut.tagName.toLowerCase() === 'input') {
+        totalAmountOut.value = totalAmount.toFixed(2);
+    } else {
+        totalAmountOut.textContent = totalAmount.toFixed(2);
+    }
 }
 
 function addPendingOrderOut() {
@@ -255,6 +260,14 @@ function addPendingOrderOut() {
     const productName = productSelect.value;
     const quantity = parseInt(document.getElementById('productQuantityOut').value);
     const unitPrice = parseFloat(document.getElementById('productPriceOut').textContent);
+    const stock = parseInt(document.getElementById('productStockOut').textContent);
+
+    // Check if stock is less than quantity
+    if (!isNaN(stock) && quantity > stock) {
+        alert('Not enough stock for this product!');
+        return;
+    }
+
     const total = (!isNaN(unitPrice) && !isNaN(quantity)) ? unitPrice * quantity : 0;
     if (!customerId || !productId || !quantity || isNaN(unitPrice)) {
         alert('Please select customer, product, and enter quantity.');

@@ -85,7 +85,7 @@ namespace WareHouseManager.Controllers
             if (ModelState.IsValid)
             {
                 await _productRepository.AddProductAsync(product);
-                SetActiveTab("product-tab");
+               // SetActiveTab("product-tab");
                 return RedirectToAction("Dashboard");
             }
             var model = new AdminDashboardViewModel
@@ -95,7 +95,7 @@ namespace WareHouseManager.Controllers
                 Customers = await _customerRepository.GetCustomersAsync() ?? new List<Customer>(),
  
             };
-            SetActiveTab("product-tab");
+           // SetActiveTab("product-tab");
             ViewData["ActiveTab"] = "product-tab";
             return View("Dashboard", model);
         }
@@ -108,7 +108,7 @@ namespace WareHouseManager.Controllers
             if (ModelState.IsValid)
             {
                 await _productRepository.UpdateProductAsync(product);
-                SetActiveTab("product-tab");
+               // SetActiveTab("product-tab");
                 return RedirectToAction("Dashboard");
             }
             else
@@ -136,7 +136,7 @@ namespace WareHouseManager.Controllers
         public async Task<IActionResult> DeleteProduct([FromForm] int id)
         {
             await _productRepository.DeleteProductAsync(id);
-            SetActiveTab("product-tab");
+          //  SetActiveTab("product-tab");
             return RedirectToAction("Dashboard");
         }
 
@@ -144,12 +144,22 @@ namespace WareHouseManager.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> AddSupplier(Supplier supplier)
         {
+            supplier.Mobile = supplier.Phone;
             await MapSupplierProductsFromForm(supplier);
             if (ModelState.IsValid)
             {
                 await _supplierRepository.AddSupplierAsync(supplier);
                 SetActiveTab("supplier-tab");
                 return RedirectToAction("Dashboard");
+            }
+            else
+            {
+                Console.WriteLine("ModelState is invalid for supplier addition.");
+                foreach (var error in ModelState.Values.SelectMany(v => v.Errors))
+                {
+                    Console.WriteLine($"Error: {error.ErrorMessage}");
+                }
+                
             }
             SetActiveTab("supplier-tab");
             var model = new AdminDashboardViewModel
@@ -327,6 +337,7 @@ namespace WareHouseManager.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> CreateTransactionIn([FromForm] string transactionInJson)
         {
+             SetActiveTab("transaction-tab");
             if (string.IsNullOrWhiteSpace(transactionInJson))
             {
                 TempData["Error"] = "Invalid transaction data.";
@@ -357,6 +368,7 @@ namespace WareHouseManager.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> CreateTransactionOut([FromForm] string transactionOutJson)
         {
+             SetActiveTab("transaction-out-tab");
             if (string.IsNullOrWhiteSpace(transactionOutJson))
             {
                 TempData["Error"] = "Invalid transaction data.";
@@ -507,7 +519,6 @@ namespace WareHouseManager.Controllers
         private void SetActiveTab(string tabName)
         {
             _httpContextAccessor.HttpContext?.Session.SetString("ActiveTab", tabName);
-            ViewData["ActiveTab"] = tabName;
         }
 
         // Helper to get the active tab from session

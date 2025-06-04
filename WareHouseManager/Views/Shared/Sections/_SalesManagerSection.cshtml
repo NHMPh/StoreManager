@@ -4,7 +4,7 @@
     var addAction = ViewData["AddSalesManagerAction"] as string ?? "AddSalesManager";
     var updateAction = ViewData["UpdateSalesManagerAction"] as string ?? "UpdateSalesManager";
     var deleteAction = ViewData["DeleteSalesManagerAction"] as string ?? "DeleteSalesManager";
-    var activeTab = ViewData["ActiveTab"] as string ?? "sales-manager-tab";
+    var activeTab = ViewData["ActiveTab"] as string ?? "product-tab";
     var displayStyle = activeTab == "sales-manager-tab" ? "block" : "none";
 }
 
@@ -152,14 +152,5 @@ function searchSalesManagers() {
     });
 }
 // --- Tab stay logic using ViewData/ViewBag ---
-(function() {
-    var activeTab = '@(ViewData["ActiveTab"] ?? "")';
-    if (activeTab && typeof showTab === 'function') {
-        window.addEventListener('DOMContentLoaded', function() {
-            setTimeout(function() {
-                showTab(activeTab);
-            }, 0);
-        });
-    }
-})();
+;
 </script>

@@ -4,7 +4,7 @@
     var addAction = ViewData["AddProductAction"] as string ?? "AddProduct";
     var updateAction = ViewData["UpdateProductAction"] as string ?? "UpdateProduct";
     var deleteAction = ViewData["DeleteProductAction"] as string ?? "DeleteProduct";
-    var activeTab = ViewData["ActiveTab"] as string ?? "product-tab";
+    var activeTab = ViewData["ActiveTab"] as string ;
     var displayStyle = activeTab == "product-tab" ? "block" : "none";
 }
 
@@ -283,16 +283,6 @@ function hideProductDetail() {
     document.getElementById('popup-overlay').style.display = 'none';
     document.getElementById('product-detail-modal').style.display = 'none';
 }
-// --- Tab stay logic using ViewData/ViewBag ---
-(function() {
-    var activeTab = '@(ViewData["ActiveTab"] ?? "")';
-    if (activeTab && typeof showTab === 'function') {
-        window.addEventListener('DOMContentLoaded', function() {
-            setTimeout(function() {
-                showTab(activeTab);
-            }, 0);
-        });
-    }
-})();
+;
 </script>
 
