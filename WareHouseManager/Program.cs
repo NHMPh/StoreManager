@@ -18,14 +18,13 @@ namespace WareHouseManager
             {
                 var configuration = sp.GetRequiredService<IConfiguration>();
                 var connectionString = configuration.GetConnectionString("DefaultConnection");
-                return new UserRepository(connectionString);
+                var httpContextAccessor = sp.GetRequiredService<IHttpContextAccessor>();
+                return new UserRepository(connectionString, httpContextAccessor);
             });
             builder.Services.AddHttpContextAccessor();
             builder.Services.AddScoped<WareHouseManager.Repositories.ProductRepository>();
             builder.Services.AddScoped<WareHouseManager.Repositories.SupplierRepository>();
             builder.Services.AddScoped<CustomerRepository>();
-            builder.Services.AddScoped<WarehouseManagerRepository>();
-            builder.Services.AddScoped<SalesManagerRepository>();
             builder.Services.AddScoped<WareHouseManager.Repositories.TransactionInRepository>();
             builder.Services.AddScoped<WareHouseManager.Repositories.TransactionOutRepository>();
             builder.Services.AddSession(options =>

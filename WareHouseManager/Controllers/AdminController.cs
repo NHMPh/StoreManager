@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Text.Json;
+using System.Linq;
 
 namespace WareHouseManager.Controllers
 {
@@ -16,20 +17,18 @@ namespace WareHouseManager.Controllers
         private readonly ProductRepository _productRepository;
         private readonly SupplierRepository _supplierRepository;
         private readonly CustomerRepository _customerRepository;
-        private readonly WarehouseManagerRepository _warehouseManagerRepository;
-        private readonly SalesManagerRepository _salesManagerRepository;
+        private readonly UserRepository _userRepository;
         private readonly IHttpContextAccessor _httpContextAccessor;
         // TransactionIn Section
         private readonly TransactionInRepository _transactionInRepository;
         private readonly TransactionOutRepository _transactionOutRepository;
 
-        public AdminController(ProductRepository productRepository, SupplierRepository supplierRepository, CustomerRepository customerRepository, WarehouseManagerRepository warehouseManagerRepository, SalesManagerRepository salesManagerRepository, IHttpContextAccessor httpContextAccessor, TransactionInRepository transactionInRepository, TransactionOutRepository transactionOutRepository)
+        public AdminController(ProductRepository productRepository, SupplierRepository supplierRepository, CustomerRepository customerRepository, UserRepository userRepository, IHttpContextAccessor httpContextAccessor, TransactionInRepository transactionInRepository, TransactionOutRepository transactionOutRepository)
         {
             _productRepository = productRepository;
             _supplierRepository = supplierRepository;
             _customerRepository = customerRepository;
-            _warehouseManagerRepository = warehouseManagerRepository;
-            _salesManagerRepository = salesManagerRepository;
+            _userRepository = userRepository;
             _httpContextAccessor = httpContextAccessor;
             _transactionInRepository = transactionInRepository;
             _transactionOutRepository = transactionOutRepository;
@@ -49,8 +48,6 @@ namespace WareHouseManager.Controllers
             var products = await _productRepository.GetProductsAsync() ?? new List<Product>();
             var suppliers = await _supplierRepository.GetSuppliersAsync() ?? new List<Supplier>();
             var customers = await _customerRepository.GetCustomersAsync() ?? new List<Customer>();
-            var warehouseManagers = await _warehouseManagerRepository.GetWarehouseManagersAsync() ?? new List<WarehouseManager>();
-            var salesManagers = await _salesManagerRepository.GetSalesManagersAsync() ?? new List<SalesManager>();
             var transactionsIn = await _transactionInRepository.GetTransactionInsAsync() ?? new List<TransactionIn>();
             ViewData["AllTransactionsIn"] = transactionsIn;
 
@@ -58,13 +55,19 @@ namespace WareHouseManager.Controllers
             var transactionsOut = await _transactionOutRepository.GetTransactionOutResponsesAsync() ?? new List<TransactionOutResponse>();
             ViewData["AllTransactionsOut"] = transactionsOut;
 
+            // Get all users and filter managers for warehouse manager section
+            var usersJson = await _userRepository.GetUsersAsync();
+            var warehouseManagers = System.Text.Json.JsonSerializer.Deserialize<List<User>>(usersJson, new System.Text.Json.JsonSerializerOptions { PropertyNameCaseInsensitive = true })
+                ?.Where(u => u.Role != null && u.Role.ToLower() == "manager").ToList() ?? new List<User>();
+            var salesManagers = System.Text.Json.JsonSerializer.Deserialize<List<User>>(usersJson, new System.Text.Json.JsonSerializerOptions { PropertyNameCaseInsensitive = true })
+                ?.Where(u => u.Role != null && u.Role.ToLower() == "sale").ToList() ?? new List<User>();
             var model = new AdminDashboardViewModel
             {
                 Products = products,
                 Suppliers = suppliers,
                 Customers = customers,
-                WarehouseManagers = warehouseManagers,
-                SalesManagers = salesManagers
+                SalesManagers = salesManagers,
+                WarehouseManagers = warehouseManagers
             };
             Console.WriteLine($"Number of products fetched: {products.Count}");
             // Log product details for debugging
@@ -90,8 +93,7 @@ namespace WareHouseManager.Controllers
                 Products = await _productRepository.GetProductsAsync() ?? new List<Product>(),
                 Suppliers = await _supplierRepository.GetSuppliersAsync() ?? new List<Supplier>(),
                 Customers = await _customerRepository.GetCustomersAsync() ?? new List<Customer>(),
-                WarehouseManagers = await _warehouseManagerRepository.GetWarehouseManagersAsync() ?? new List<WarehouseManager>(),
-                SalesManagers = await _salesManagerRepository.GetSalesManagersAsync() ?? new List<SalesManager>()
+ 
             };
             SetActiveTab("product-tab");
             ViewData["ActiveTab"] = "product-tab";
@@ -123,8 +125,6 @@ namespace WareHouseManager.Controllers
                 Products = await _productRepository.GetProductsAsync() ?? new List<Product>(),
                 Suppliers = await _supplierRepository.GetSuppliersAsync() ?? new List<Supplier>(),
                 Customers = await _customerRepository.GetCustomersAsync() ?? new List<Customer>(),
-                WarehouseManagers = await _warehouseManagerRepository.GetWarehouseManagersAsync() ?? new List<WarehouseManager>(),
-                SalesManagers = await _salesManagerRepository.GetSalesManagersAsync() ?? new List<SalesManager>()
             };
             ViewData["ActiveTab"] = "product-tab";
             return View("Dashboard", model);
@@ -157,8 +157,6 @@ namespace WareHouseManager.Controllers
                 Products = await _productRepository.GetProductsAsync() ?? new List<Product>(),
                 Suppliers = await _supplierRepository.GetSuppliersAsync() ?? new List<Supplier>(),
                 Customers = await _customerRepository.GetCustomersAsync() ?? new List<Customer>(),
-                WarehouseManagers = await _warehouseManagerRepository.GetWarehouseManagersAsync() ?? new List<WarehouseManager>(),
-                SalesManagers = await _salesManagerRepository.GetSalesManagersAsync() ?? new List<SalesManager>()
             };
             ViewData["ActiveTab"] = "supplier-tab";
             return View("Dashboard", model);
@@ -188,8 +186,6 @@ namespace WareHouseManager.Controllers
                 Products = await _productRepository.GetProductsAsync() ?? new List<Product>(),
                 Suppliers = await _supplierRepository.GetSuppliersAsync() ?? new List<Supplier>(),
                 Customers = await _customerRepository.GetCustomersAsync() ?? new List<Customer>(),
-                WarehouseManagers = await _warehouseManagerRepository.GetWarehouseManagersAsync() ?? new List<WarehouseManager>(),
-                SalesManagers = await _salesManagerRepository.GetSalesManagersAsync() ?? new List<SalesManager>()
             };
             ViewData["ActiveTab"] = "supplier-tab";
             return View("Dashboard", model);
@@ -221,8 +217,7 @@ namespace WareHouseManager.Controllers
                 Products = await _productRepository.GetProductsAsync() ?? new List<Product>(),
                 Suppliers = await _supplierRepository.GetSuppliersAsync() ?? new List<Supplier>(),
                 Customers = await _customerRepository.GetCustomersAsync() ?? new List<Customer>(),
-                WarehouseManagers = await _warehouseManagerRepository.GetWarehouseManagersAsync() ?? new List<WarehouseManager>(),
-                SalesManagers = await _salesManagerRepository.GetSalesManagersAsync() ?? new List<SalesManager>()
+
             };
             ViewData["ActiveTab"] = "customer-tab";
             return View("Dashboard", model);
@@ -251,8 +246,6 @@ namespace WareHouseManager.Controllers
                 Products = await _productRepository.GetProductsAsync() ?? new List<Product>(),
                 Suppliers = await _supplierRepository.GetSuppliersAsync() ?? new List<Supplier>(),
                 Customers = await _customerRepository.GetCustomersAsync() ?? new List<Customer>(),
-                WarehouseManagers = await _warehouseManagerRepository.GetWarehouseManagersAsync() ?? new List<WarehouseManager>(),
-                SalesManagers = await _salesManagerRepository.GetSalesManagersAsync() ?? new List<SalesManager>()
             };
             ViewData["ActiveTab"] = "customer-tab";
             return View("Dashboard", model);
@@ -270,112 +263,52 @@ namespace WareHouseManager.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> AddWarehouseManager(WarehouseManager manager)
+        public async Task<IActionResult> AddSalesManager(User manager)
         {
+            manager.Role = "Sale";
             if (ModelState.IsValid)
             {
-                await _warehouseManagerRepository.AddWarehouseManagerAsync(manager);
-                SetActiveTab("warehouse-manager-tab");
-                return RedirectToAction("Dashboard");
-            }
-            SetActiveTab("warehouse-manager-tab");
-            var model = new AdminDashboardViewModel
-            {
-                Products = await _productRepository.GetProductsAsync() ?? new List<Product>(),
-                Suppliers = await _supplierRepository.GetSuppliersAsync() ?? new List<Supplier>(),
-                Customers = await _customerRepository.GetCustomersAsync() ?? new List<Customer>(),
-                WarehouseManagers = await _warehouseManagerRepository.GetWarehouseManagersAsync() ?? new List<WarehouseManager>(),
-                SalesManagers = await _salesManagerRepository.GetSalesManagersAsync() ?? new List<SalesManager>()
-            };
-            ViewData["ActiveTab"] = "warehouse-manager-tab";
-            return View("Dashboard", model);
-        }
-
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> UpdateWarehouseManager(WarehouseManager manager)
-        {
-            if (ModelState.IsValid)
-            {
-                await _warehouseManagerRepository.UpdateWarehouseManagerAsync(manager);
-                SetActiveTab("warehouse-manager-tab");
-                return RedirectToAction("Dashboard");
-            }
-            SetActiveTab("warehouse-manager-tab");
-            var model = new AdminDashboardViewModel
-            {
-                Products = await _productRepository.GetProductsAsync() ?? new List<Product>(),
-                Suppliers = await _supplierRepository.GetSuppliersAsync() ?? new List<Supplier>(),
-                Customers = await _customerRepository.GetCustomersAsync() ?? new List<Customer>(),
-                WarehouseManagers = await _warehouseManagerRepository.GetWarehouseManagersAsync() ?? new List<WarehouseManager>(),
-                SalesManagers = await _salesManagerRepository.GetSalesManagersAsync() ?? new List<SalesManager>()
-            };
-            ViewData["ActiveTab"] = "warehouse-manager-tab";
-            return View("Dashboard", model);
-        }
-
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        [ActionName("DeleteWarehouseManager")]
-        public async Task<IActionResult> DeleteWarehouseManager([FromForm] int id)
-        {
-            await _warehouseManagerRepository.DeleteWarehouseManagerAsync(id);
-            SetActiveTab("warehouse-manager-tab");
-            return RedirectToAction("Dashboard");
-        }
-
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> AddSalesManager(SalesManager manager)
-        {
-            if (ModelState.IsValid)
-            {
-                await _salesManagerRepository.AddSalesManagerAsync(manager);
+                await _userRepository.CreateUserAsync(manager);
                 SetActiveTab("sales-manager-tab");
                 return RedirectToAction("Dashboard");
             }
             SetActiveTab("sales-manager-tab");
-            var model = new AdminDashboardViewModel
-            {
-                Products = await _productRepository.GetProductsAsync() ?? new List<Product>(),
-                Suppliers = await _supplierRepository.GetSuppliersAsync() ?? new List<Supplier>(),
-                Customers = await _customerRepository.GetCustomersAsync() ?? new List<Customer>(),
-                WarehouseManagers = await _warehouseManagerRepository.GetWarehouseManagersAsync() ?? new List<WarehouseManager>(),
-                SalesManagers = await _salesManagerRepository.GetSalesManagersAsync() ?? new List<SalesManager>()
-            };
+            var usersJson = await _userRepository.GetUsersAsync();
+            var users = System.Text.Json.JsonSerializer.Deserialize<List<User>>(usersJson, new System.Text.Json.JsonSerializerOptions { PropertyNameCaseInsensitive = true }) ?? new List<User>();
+            var salesManagers = users.Where(u => u.Role != null && u.Role.ToLower() == "sale").ToList();
             ViewData["ActiveTab"] = "sales-manager-tab";
-            return View("Dashboard", model);
+            // Only set WarehouseManagers to salesManagers for the section, since we're using User for both
+            return View("Dashboard", new AdminDashboardViewModel { WarehouseManagers = salesManagers });
         }
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> UpdateSalesManager(SalesManager manager)
+        public async Task<IActionResult> UpdateSalesManager(User manager)
         {
-            if (ModelState.IsValid)
+            manager.Role = "Sale";
+            if (ModelState.IsValid && manager.Id > 0)
             {
-                await _salesManagerRepository.UpdateSalesManagerAsync(manager);
+                await _userRepository.UpdateUserAsync(manager.Id, manager);
                 SetActiveTab("sales-manager-tab");
                 return RedirectToAction("Dashboard");
             }
             SetActiveTab("sales-manager-tab");
-            var model = new AdminDashboardViewModel
-            {
-                Products = await _productRepository.GetProductsAsync() ?? new List<Product>(),
-                Suppliers = await _supplierRepository.GetSuppliersAsync() ?? new List<Supplier>(),
-                Customers = await _customerRepository.GetCustomersAsync() ?? new List<Customer>(),
-                WarehouseManagers = await _warehouseManagerRepository.GetWarehouseManagersAsync() ?? new List<WarehouseManager>(),
-                SalesManagers = await _salesManagerRepository.GetSalesManagersAsync() ?? new List<SalesManager>()
-            };
+            var usersJson = await _userRepository.GetUsersAsync();
+            var users = System.Text.Json.JsonSerializer.Deserialize<List<User>>(usersJson, new System.Text.Json.JsonSerializerOptions { PropertyNameCaseInsensitive = true }) ?? new List<User>();
+            var salesManagers = users.Where(u => u.Role != null && u.Role.ToLower() == "sale").ToList();
             ViewData["ActiveTab"] = "sales-manager-tab";
-            return View("Dashboard", model);
+            // Only set WarehouseManagers to salesManagers for the section, since we're using User for both
+            return View("Dashboard", new AdminDashboardViewModel { WarehouseManagers = salesManagers });
         }
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        [ActionName("DeleteSalesManager")]
         public async Task<IActionResult> DeleteSalesManager([FromForm] int id)
         {
-            await _salesManagerRepository.DeleteSalesManagerAsync(id);
+            if (id > 0)
+            {
+                await _userRepository.DeleteUserAsync(id);
+            }
             SetActiveTab("sales-manager-tab");
             return RedirectToAction("Dashboard");
         }
@@ -444,6 +377,74 @@ namespace WareHouseManager.Controllers
             return RedirectToAction("Dashboard");
         }
 
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> AddWarehouseManager(User user)
+        {
+            // Always set role to Manager for safety
+            user.Role = "Manager";
+            if (ModelState.IsValid)
+            {
+                var result = await _userRepository.CreateUserAsync(user);
+                // Optionally, check result for errors
+                SetActiveTab("warehouse-manager-tab");
+                return RedirectToAction("Dashboard");
+            }
+            // If invalid, reload dashboard with errors
+            SetActiveTab("warehouse-manager-tab");
+            var model = new AdminDashboardViewModel
+            {
+                Products = await _productRepository.GetProductsAsync() ?? new List<Product>(),
+                Suppliers = await _supplierRepository.GetSuppliersAsync() ?? new List<Supplier>(),
+                Customers = await _customerRepository.GetCustomersAsync() ?? new List<Customer>(),
+                SalesManagers = (System.Text.Json.JsonSerializer.Deserialize<List<User>>(await _userRepository.GetUsersAsync(), new System.Text.Json.JsonSerializerOptions { PropertyNameCaseInsensitive = true }) ?? new List<User>()).Where(u => u.Role != null && u.Role.ToLower() == "sale").ToList(),
+                WarehouseManagers = (System.Text.Json.JsonSerializer.Deserialize<List<User>>(await _userRepository.GetUsersAsync(), new System.Text.Json.JsonSerializerOptions { PropertyNameCaseInsensitive = true }) ?? new List<User>()).Where(u => u.Role != null && u.Role.ToLower() == "manager").ToList()
+            };
+            ViewData["ActiveTab"] = "warehouse-manager-tab";
+            return View("Dashboard", model);
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> UpdateWarehouseManager(User user)
+        {
+            user.Role = "Manager";
+            if (ModelState.IsValid && user.Id > 0)
+            {
+                var result = await _userRepository.UpdateUserAsync(user.Id, user);
+                SetActiveTab("warehouse-manager-tab");
+                return RedirectToAction("Dashboard");
+            }
+            SetActiveTab("warehouse-manager-tab");
+            var model = new AdminDashboardViewModel
+            {
+                Products = await _productRepository.GetProductsAsync() ?? new List<Product>(),
+                Suppliers = await _supplierRepository.GetSuppliersAsync() ?? new List<Supplier>(),
+                Customers = await _customerRepository.GetCustomersAsync() ?? new List<Customer>(),
+                SalesManagers = (System.Text.Json.JsonSerializer.Deserialize<List<User>>(await _userRepository.GetUsersAsync(), new System.Text.Json.JsonSerializerOptions { PropertyNameCaseInsensitive = true }) ?? new List<User>()).Where(u => u.Role != null && u.Role.ToLower() == "sale").ToList(),
+                WarehouseManagers = (
+                    System.Text.Json.JsonSerializer.Deserialize<List<User>>(
+                        await _userRepository.GetUsersAsync(),
+                        new System.Text.Json.JsonSerializerOptions { PropertyNameCaseInsensitive = true }
+                    ) ?? new List<User>()
+                ).Where(u => u.Role != null && u.Role.ToLower() == "manager").ToList()
+            };
+            ViewData["ActiveTab"] = "warehouse-manager-tab";
+            return View("Dashboard", model);
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> DeleteWarehouseManager([FromForm] int id)
+        {
+            if (id > 0)
+            {
+                var result = await _userRepository.DeleteUserAsync(id);
+            }
+            SetActiveTab("warehouse-manager-tab");
+            return RedirectToAction("Dashboard");
+        }
+
         // Helper to set the active tab in session
         private void SetActiveTab(string tabName)
         {
@@ -476,6 +477,8 @@ namespace WareHouseManager.Controllers
                 supplier.Products = new List<Product>();
             }
         }
+
+       
     }
 
     public class AdminDashboardViewModel
@@ -483,7 +486,7 @@ namespace WareHouseManager.Controllers
         public List<Product> Products { get; set; } = new List<Product>();
         public List<Supplier> Suppliers { get; set; } = new List<Supplier>();
         public List<Customer> Customers { get; set; } = new List<Customer>();
-        public List<WarehouseManager> WarehouseManagers { get; set; } = new List<WarehouseManager>();
-        public List<SalesManager> SalesManagers { get; set; } = new List<SalesManager>();
+        public List<User> WarehouseManagers { get; set; } = new List<User>();
+        public List<User> SalesManagers { get; set; } = new List<User>();
     }
 }

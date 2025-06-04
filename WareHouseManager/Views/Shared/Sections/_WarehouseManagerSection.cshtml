@@ -1,9 +1,9 @@
-@model List<WareHouseManager.Models.WarehouseManager>
+@model List<WareHouseManager.Models.User>
 @{
-    var controllerName = ViewData["WarehouseManagerController"] as string ?? "Admin";
-    var addAction = ViewData["AddWarehouseManagerAction"] as string ?? "AddWarehouseManager";
-    var updateAction = ViewData["UpdateWarehouseManagerAction"] as string ?? "UpdateWarehouseManager";
-    var deleteAction = ViewData["DeleteWarehouseManagerAction"] as string ?? "DeleteWarehouseManager";
+    var controllerName = "Admin";
+    var addAction = "AddWarehouseManager";
+    var updateAction = "UpdateWarehouseManager";
+    var deleteAction = "DeleteWarehouseManager";
 }
 
 @* Warehouse Manager Section *@
@@ -23,29 +23,19 @@
         {
             foreach (var manager in Model)
             {
-                <div class="flash-card" data-warehouse-manager-id="@manager.ManagerId">
-                    <div class="icon-container">
-                        @if (!string.IsNullOrEmpty(manager.Image))
-                        {
-                            <img src="@manager.Image" alt="Manager Image" class="icon-image" />
-                        }
-                        else
-                        {
-                            <span>No image</span>
-                        }
-                    </div>
+                <div class="flash-card" data-warehouse-manager-id="@manager.Id">
                     <div class="warehouse-manager-details">
-                        <h4>@manager.ManagerName</h4>
+                        <h4>@manager.Name</h4>
                         <p>Email: @manager.Email</p>
-                        <p>Phone: @manager.Contact</p>
+                        <p>Phone: @manager.Phone</p>
                         <p>Username: @manager.Username</p>
                     </div>
                     <div class="warehouse-manager-actions">
-                        <button class="edit-button" type="button" onclick="openEditWarehouseManagerPopup(@manager.ManagerId)">
+                        <button class="edit-button" type="button" onclick="openEditWarehouseManagerPopup(@manager.Id)">
                             <i class="fas fa-edit"></i> Edit
                         </button>
                         <form method="post" asp-action="@deleteAction" asp-controller="@controllerName" style="display:inline;" onsubmit="return confirm('Are you sure you want to delete this warehouse manager?');">
-                            <input type="hidden" name="id" value="@manager.ManagerId" />
+                            <input type="hidden" name="id" value="@manager.Id" />
                             <button type="submit" class="delete-button">
                                 <i class="fas fa-trash"></i> Delete
                             </button>
@@ -68,7 +58,7 @@
             @Html.AntiForgeryToken()
             <div class="form-group">
                 <label for="warehouseManagerName">Name</label>
-                <input type="text" id="warehouseManagerName" name="ManagerName" required maxlength="100" />
+                <input type="text" id="warehouseManagerName" name="Name" required maxlength="100" />
             </div>
             <div class="form-group">
                 <label for="warehouseManagerEmail">Email</label>
@@ -76,7 +66,7 @@
             </div>
             <div class="form-group">
                 <label for="warehouseManagerContact">Phone</label>
-                <input type="text" id="warehouseManagerContact" name="Contact" maxlength="20" />
+                <input type="text" id="warehouseManagerContact" name="Phone" maxlength="20" />
             </div>
             <div class="form-group">
                 <label for="warehouseManagerUsername">Username</label>
@@ -86,10 +76,7 @@
                 <label for="warehouseManagerPassword">Password</label>
                 <input type="password" id="warehouseManagerPassword" name="Password" maxlength="50" />
             </div>
-            <div class="form-group">
-                <label for="warehouseManagerImage">Image URL</label>
-                <input type="text" id="warehouseManagerImage" name="Image" maxlength="300" />
-            </div>
+            <input type="hidden" name="Role" value="Manager" />
             <button type="submit" class="submit-button">Submit</button>
             <button type="button" class="cancel-button" onclick="hideAddWarehouseManagerPopup()">Cancel</button>
         </form>
@@ -101,10 +88,10 @@
         <h3>Edit Warehouse Manager</h3>
         <form asp-antiforgery="true" method="post" asp-action="@updateAction" asp-controller="@controllerName">
             @Html.AntiForgeryToken()
-            <input type="hidden" id="editWarehouseManagerId" name="ManagerId" />
+            <input type="hidden" id="editWarehouseManagerId" name="Id" />
             <div class="form-group">
                 <label for="editWarehouseManagerName">Name</label>
-                <input type="text" id="editWarehouseManagerName" name="ManagerName" required maxlength="100" />
+                <input type="text" id="editWarehouseManagerName" name="Name" required maxlength="100" />
             </div>
             <div class="form-group">
                 <label for="editWarehouseManagerEmail">Email</label>
@@ -112,7 +99,7 @@
             </div>
             <div class="form-group">
                 <label for="editWarehouseManagerContact">Phone</label>
-                <input type="text" id="editWarehouseManagerContact" name="Contact" maxlength="20" />
+                <input type="text" id="editWarehouseManagerContact" name="Phone" maxlength="20" />
             </div>
             <div class="form-group">
                 <label for="editWarehouseManagerUsername">Username</label>
@@ -122,10 +109,7 @@
                 <label for="editWarehouseManagerPassword">Password</label>
                 <input type="password" id="editWarehouseManagerPassword" name="Password" maxlength="50" />
             </div>
-            <div class="form-group">
-                <label for="editWarehouseManagerImage">Image URL</label>
-                <input type="text" id="editWarehouseManagerImage" name="Image" maxlength="300" />
-            </div>
+            <input type="hidden" name="Role" value="Manager" />
             <button type="submit" class="submit-button">Save</button>
             <button type="button" class="cancel-button" onclick="hideEditWarehouseManagerPopup()">Cancel</button>
         </form>
@@ -151,7 +135,6 @@ function openEditWarehouseManagerPopup(managerId) {
     document.getElementById('editWarehouseManagerContact').value = card.querySelector('.warehouse-manager-details p:nth-child(3)').textContent.split(': ')[1];
     document.getElementById('editWarehouseManagerUsername').value = card.querySelector('.warehouse-manager-details p:nth-child(4)').textContent.split(': ')[1];
     document.getElementById('editWarehouseManagerPassword').value = '';
-    document.getElementById('editWarehouseManagerImage').value = card.querySelector('.icon-container img')?.src || '';
     document.getElementById('edit-warehouse-manager-popup').style.display = 'block';
 }
 function hideEditWarehouseManagerPopup() {

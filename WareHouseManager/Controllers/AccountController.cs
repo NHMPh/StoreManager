@@ -7,11 +7,13 @@ namespace WareHouseManager.Controllers
     public class AccountController : Controller
     {
         private readonly UserRepository _userRepository;
+        private readonly IHttpContextAccessor _httpContextAccessor;
 
-        public AccountController(IConfiguration configuration)
+        public AccountController(IConfiguration configuration, IHttpContextAccessor httpContextAccessor)
         {
-            var connectionString = configuration.GetConnectionString("DefaultConnection");
-            _userRepository = new UserRepository(connectionString);
+            var connectionString = configuration.GetConnectionString("DefaultConnection") ?? string.Empty;
+            _httpContextAccessor = httpContextAccessor;
+            _userRepository = new UserRepository(connectionString, httpContextAccessor);
         }
 
         [HttpGet]
