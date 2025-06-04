@@ -4,7 +4,7 @@
     var products = ViewData["AllProducts"] as List<WareHouseManager.Models.Product>;
     var controllerName = ViewData["TransactionInController"] as string ?? "Admin";
     var addAction = ViewData["AddTransactionInAction"] as string ?? "CreateTransactionIn";
-    var activeTab = ViewData["ActiveTab"] as string ?? "product-tab";
+    var activeTab = ViewData["ActiveTab"] as string ?? "transaction-tab";
     var displayStyle = activeTab == "transaction-tab" ? "block" : "none";
 }
 <div id="transaction-tab" class="tab-content" style="display: @displayStyle;">

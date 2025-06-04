@@ -1,10 +1,22 @@
 @* Settings Section *@
-<div id="settings-tab" class="tab-content" style="display: none;">
+@{
+    var activeTab = ViewData["ActiveTab"] as string ?? "settings-tab";
+    var displayStyle = activeTab == "settings-tab" ? "block" : "none";
+}
+<div id="settings-tab" class="tab-content" style="display: @displayStyle;">
     <div class="title-bar">
         <h2>Change Password</h2>
     </div>
     <div class="settings-section">
-        <form id="changePasswordForm" method="post" action="/Account/ChangePassword">
+        @if (TempData["Error"] != null)
+        {
+            <div class="alert alert-danger">@TempData["Error"]</div>
+        }
+        @if (TempData["Success"] != null)
+        {
+            <div class="alert alert-success">@TempData["Success"]</div>
+        }
+        <form asp-antiforgery="true" method="post" asp-action="ChangePassword" asp-controller="Admin">
             <div class="form-group">
                 <label for="oldPassword">Old Password</label>
                 <input type="password" class="form-control" id="oldPassword" name="oldPassword" required />

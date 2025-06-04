@@ -1,5 +1,9 @@
 @* Manage Orders Section *@
-<div id="orders-tab" class="tab-content" style="display: none;">
+@{
+    var activeTab = ViewData["ActiveTab"] as string ?? "orders-tab";
+    var displayStyle = activeTab == "orders-tab" ? "block" : "none";
+}
+<div id="orders-tab" class="tab-content" style="display: @displayStyle;">
     <div class="title-bar">
         <h3>Manage Orders</h3>
     </div>

@@ -4,7 +4,7 @@
     var addAction = ViewData["AddSupplierAction"] as string ?? "AddSupplier";
     var updateAction = ViewData["UpdateSupplierAction"] as string ?? "UpdateSupplier";
     var deleteAction = ViewData["DeleteSupplierAction"] as string ?? "DeleteSupplier";
-    var activeTab = ViewData["ActiveTab"] as string ?? "product-tab";
+    var activeTab = ViewData["ActiveTab"] as string ?? "supplier-tab";
     var displayStyle = activeTab == "supplier-tab" ? "block" : "none";
 }
 
@@ -31,10 +31,6 @@
             foreach (var supplier in Model)
             {
                 <div class="flash-card" data-supplier-id="@supplier.Id">
-                    <div class="icon-container">
-                        @* No image in API, but keep for future *@
-                        <span>No image</span>
-                    </div>
                     <div class="supplier-details">
                         <h4>@supplier.Name</h4>
                         <p>Email: @supplier.Email</p>
@@ -82,7 +78,7 @@
             </div>
             <div class="form-group">
                 <label for="supplierMobile">Phone</label>
-                <input type="text" id="supplierMobile" name="Mobile" maxlength="20" />
+                <input type="text" id="supplierMobile" name="Phone" maxlength="20" />
             </div>
             <div class="form-group">
                 <label for="supplierAddress">Address</label>
@@ -131,7 +127,7 @@
             </div>
             <div class="form-group">
                 <label for="editSupplierMobile">Phone</label>
-                <input type="text" id="editSupplierMobile" name="Mobile" maxlength="20" />
+                <input type="text" id="editSupplierMobile" name="Phone" maxlength="20" />
             </div>
             <div class="form-group">
                 <label for="editSupplierAddress">Address</label>

@@ -4,8 +4,9 @@
     var addAction = ViewData["AddCustomerAction"] as string ?? "AddCustomer";
     var updateAction = ViewData["UpdateCustomerAction"] as string ?? "UpdateCustomer";
     var deleteAction = ViewData["DeleteCustomerAction"] as string ?? "DeleteCustomer";
-    var activeTab = ViewData["ActiveTab"] as string ?? "product-tab";
+    var activeTab = ViewData["ActiveTab"] as string ?? "customer-tab";
     var displayStyle = activeTab == "customer-tab" ? "block" : "none";
+
 }
 
 
@@ -30,9 +31,6 @@
             foreach (var customer in Model)
             {
                 <div class="flash-card" data-customer-id="@customer.Id">
-                    <div class="icon-container">
-                        <span>No image</span>
-                    </div>
                     <div class="customer-details">
                         <h4>@customer.FullName</h4>
                         <p>Email: @customer.Email</p>

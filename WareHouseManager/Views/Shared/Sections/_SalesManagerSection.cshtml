@@ -4,10 +4,12 @@
     var addAction = ViewData["AddSalesManagerAction"] as string ?? "AddSalesManager";
     var updateAction = ViewData["UpdateSalesManagerAction"] as string ?? "UpdateSalesManager";
     var deleteAction = ViewData["DeleteSalesManagerAction"] as string ?? "DeleteSalesManager";
+    var activeTab = ViewData["ActiveTab"] as string ?? "sales-manager-tab";
+    var displayStyle = activeTab == "sales-manager-tab" ? "block" : "none";
 }
 
 @* Sales Manager Section *@
-<div id="sales-manager-tab" class="tab-content" style="display: none;">
+<div id="sales-manager-tab" class="tab-content" style="display: @displayStyle;">
     <div class="title-bar" style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px;">
         <h3 style="margin: 0;">Sales Managers</h3>
         <button type="button" class="btn btn-success" style="height: 38px;" onclick="showAddSalesManagerPopup()">
@@ -18,19 +20,19 @@
         <input type="text" id="salesManagerSearch" placeholder="Search sales managers by name..." onkeyup="searchSalesManagers()" class="form-control" style="width: 300px;" />
         <button type="button" onclick="searchSalesManagers()" class="btn btn-primary" style="height: 38px;">Search</button>
     </div>
-    <div class="flash-card-container" id="salesManagerContainer">
+    <div class="flash-card-container" id="warehouseManagerContainer">
         @if (Model != null && Model.Count > 0)
         {
             foreach (var manager in Model)
             {
                 <div class="flash-card" data-sales-manager-id="@manager.Id">
-                    <div class="sales-manager-details">
+                    <div class="warehouse-manager-details">
                         <h4>@manager.Name</h4>
                         <p>Email: @manager.Email</p>
                         <p>Phone: @manager.Phone</p>
                         <p>Username: @manager.Username</p>
                     </div>
-                    <div class="sales-manager-actions">
+                    <div class="warehouse-manager-actions">
                         <button class="edit-button" type="button" onclick="openEditSalesManagerPopup(@manager.Id)">
                             <i class="fas fa-edit"></i> Edit
                         </button>
@@ -130,10 +132,10 @@ function openEditSalesManagerPopup(managerId) {
     const card = document.querySelector(`.flash-card[data-sales-manager-id='${managerId}']`);
     if (!card) return;
     document.getElementById('editSalesManagerId').value = managerId;
-    document.getElementById('editSalesManagerName').value = card.querySelector('.sales-manager-details h4').textContent;
-    document.getElementById('editSalesManagerEmail').value = card.querySelector('.sales-manager-details p:nth-child(2)').textContent.split(': ')[1];
-    document.getElementById('editSalesManagerContact').value = card.querySelector('.sales-manager-details p:nth-child(3)').textContent.split(': ')[1];
-    document.getElementById('editSalesManagerUsername').value = card.querySelector('.sales-manager-details p:nth-child(4)').textContent.split(': ')[1];
+    document.getElementById('editSalesManagerName').value = card.querySelector('.warehouse-manager-details h4').textContent;
+    document.getElementById('editSalesManagerEmail').value = card.querySelector('.warehouse-manager-details p:nth-child(2)').textContent.split(': ')[1];
+    document.getElementById('editSalesManagerContact').value = card.querySelector('.warehouse-manager-details p:nth-child(3)').textContent.split(': ')[1];
+    document.getElementById('editSalesManagerUsername').value = card.querySelector('.warehouse-manager-details p:nth-child(4)').textContent.split(': ')[1];
     document.getElementById('editSalesManagerPassword').value = '';
     document.getElementById('edit-sales-manager-popup').style.display = 'block';
 }
@@ -145,7 +147,7 @@ function searchSalesManagers() {
     var input = document.getElementById('salesManagerSearch').value.toLowerCase();
     var cards = document.querySelectorAll('#salesManagerContainer .flash-card');
     cards.forEach(function(card) {
-        var name = card.querySelector('.sales-manager-details h4').textContent.toLowerCase();
+        var name = card.querySelector('.warehouse-manager-details h4').textContent.toLowerCase();
         card.style.display = name.includes(input) ? '' : 'none';
     });
 }

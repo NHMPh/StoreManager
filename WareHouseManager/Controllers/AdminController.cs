@@ -445,10 +445,69 @@ namespace WareHouseManager.Controllers
             return RedirectToAction("Dashboard");
         }
 
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> ChangePassword(string oldPassword, string newPassword, string confirmPassword)
+        {
+            if (string.IsNullOrWhiteSpace(newPassword) || newPassword != confirmPassword)
+            {
+                TempData["Error"] = "New passwords do not match.";
+                SetActiveTab("settings-tab");
+                return RedirectToAction("Dashboard");
+            }
+
+            // Get admin username from session
+            var username = HttpContext.Session.GetString("CurrentUsername") ?? "Admin";
+            // Get all users to find admin's id
+            var usersJson = await _userRepository.GetUsersAsync();
+            var users = System.Text.Json.JsonSerializer.Deserialize<List<User>>(usersJson, new System.Text.Json.JsonSerializerOptions { PropertyNameCaseInsensitive = true }) ?? new List<User>();
+            var admin = users.FirstOrDefault(u => u.Username != null && u.Username.ToLower() == username.ToLower());
+
+           
+            if (admin == null)
+            {
+                TempData["Error"] = "Admin user not found.";
+                SetActiveTab("settings-tab");
+                return RedirectToAction("Dashboard");
+            }
+
+
+            if(admin.Password == null|| admin.Password !=oldPassword) 
+            {
+                TempData["Error"] = "Admin user does not have a password set.";
+                SetActiveTab("settings-tab");
+                return RedirectToAction("Dashboard");
+            }
+            // Optionally, verify old password here if needed (not possible if not returned by API)
+            // Build update object
+            var updateUser = new User
+            {
+                Id = admin.Id,
+                Username = admin.Username,
+                Password = newPassword,
+                Role = admin.Role,
+                Name = admin.Name,
+                Phone = admin.Phone,
+                Email = admin.Email
+            };
+            var result = await _userRepository.UpdateUserAsync(admin.Id, updateUser);
+            if (result.ToLower().Contains("error"))
+            {
+                TempData["Error"] = "Failed to change password.";
+            }
+            else
+            {
+                TempData["Success"] = "Password changed successfully.";
+            }
+            SetActiveTab("settings-tab");
+            return RedirectToAction("Dashboard");
+        }
+
         // Helper to set the active tab in session
         private void SetActiveTab(string tabName)
         {
             _httpContextAccessor.HttpContext?.Session.SetString("ActiveTab", tabName);
+            ViewData["ActiveTab"] = tabName;
         }
 
         // Helper to get the active tab from session

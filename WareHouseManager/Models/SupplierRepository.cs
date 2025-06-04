@@ -43,11 +43,7 @@ namespace WareHouseManager.Repositories
                         suppliers = result;
                 }
             }
-            Console.WriteLine($"Fetched {suppliers.Count} suppliers");
-            foreach (var supplier in suppliers)
-            {
-                Console.WriteLine($"Supplier: {supplier.Id}, {supplier.Name}, {supplier.Address}, {supplier.Mobile}");
-            }
+           
             return suppliers;
         }
 

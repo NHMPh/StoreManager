@@ -17,10 +17,15 @@ namespace WareHouseManager.Models
         [StringLength(100)]
         [JsonPropertyName("email")]
         public string? Email { get; set; }
-        [Required(ErrorMessage = "Mobile is required.")]
-        [StringLength(20)]
+       
         [JsonPropertyName("mobile")]
         public string? Mobile { get; set; }
+
+        [JsonPropertyName("Phone")]
+        [Required(ErrorMessage = "Mobile is required.")]
+        [StringLength(20)]
+        public string? Phone { get; set; }
+
         [Required(ErrorMessage = "Address is required.")]
         [StringLength(200)]
         [JsonPropertyName("address")]

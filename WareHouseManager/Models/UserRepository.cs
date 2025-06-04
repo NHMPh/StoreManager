@@ -33,21 +33,24 @@ namespace WareHouseManager.Repositories
                     Username = username,
                     Password = password
                 };
-                var content = new StringContent(JsonSerializer.Serialize(payload), Encoding.UTF8, new System.Net.Http.Headers.MediaTypeHeaderValue("application/json"));
+                var content = new StringContent(JsonSerializer.Serialize(payload), Encoding.UTF8, "application/json");
 
                 var response = await client.PostAsync(apiUrl, content);
                 if (response.IsSuccessStatusCode)
                 {
                     var json = await response.Content.ReadAsStringAsync();
-                    Console.WriteLine($"Response JSON: {json}");
                     using (var doc = JsonDocument.Parse(json))
                     {
                         var root = doc.RootElement;
                         var token = root.GetProperty("token").GetString();
+                        var userRole = root.GetProperty("role").GetString();
+                        var userName = root.GetProperty("username").GetString();
+                        // Save username to session for reference (for password change, etc.)
+                        _httpContextAccessor.HttpContext?.Session.SetString("CurrentUsername", userName ?? "");
                         var user = new LoginModel
                         {
-                            Username = root.GetProperty("username").GetString(),
-                            Role = root.GetProperty("role").GetString(),
+                            Username = userName,
+                            Role = userRole
                         };
                         return (user, token);
                     }

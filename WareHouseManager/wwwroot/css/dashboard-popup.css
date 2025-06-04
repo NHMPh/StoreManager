@@ -206,11 +206,7 @@ textarea {
     color: #dc3545; /* Red on hover */
 }
 
-.sales-manager-details {
-    margin-bottom: 10px; /* Space below details */
-    font-size: 0.9rem; /* Adjusted font size for details */
-    color: #333; /* Dark gray text */
-}
+
 
 .sales-manager-actions {
     display: flex;

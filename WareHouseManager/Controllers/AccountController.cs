@@ -49,5 +49,41 @@ namespace WareHouseManager.Controllers
             }
             return View(model);
         }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> ChangePassword(string oldPassword, string newPassword, string confirmPassword)
+        {
+            if (string.IsNullOrWhiteSpace(newPassword) || newPassword != confirmPassword)
+            {
+                TempData["Error"] = "New passwords do not match.";
+                return RedirectToAction("Dashboard", "Admin");
+            }
+            // Get current username from session
+            var username = HttpContext.Session.GetString("CurrentUsername");
+            if (string.IsNullOrEmpty(username))
+            {
+                TempData["Error"] = "Session expired. Please log in again.";
+                return RedirectToAction("Login");
+            }
+            // Optionally, verify old password by re-authenticating
+            var authResult = await _userRepository.AuthenticateUserAsync(username, oldPassword);
+            if (authResult.user == null)
+            {
+                TempData["Error"] = "Old password is incorrect.";
+                return RedirectToAction("Dashboard", "Admin");
+            }
+            // Build user object for update
+            var userObj = new User {
+                Id = 1, // Admin id is 1 (hardcoded as per your example)
+                Username = username,
+                Password = newPassword,
+                Role = "Admin"
+            };
+            var token = HttpContext.Session.GetString("AuthToken");
+            await _userRepository.UpdateUserAsync(1, userObj, token);
+            TempData["Success"] = "Password changed successfully.";
+            return RedirectToAction("Dashboard", "Admin");
+        }
     }
 }
